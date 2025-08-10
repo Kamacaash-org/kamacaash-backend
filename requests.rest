@@ -1,0 +1,40 @@
+@hostname = localhost
+@port = 3000
+@prefix = api/v1
+@host = {{hostname}}:{{port}}
+@contentType = application/json
+@userId = 511a3e2f-cb02-4a1a-94ed-ee3eb24cec8c
+
+###
+GET http://{{host}}/{{prefix}}/users
+
+###
+GET http://{{host}}/{{prefix}}/users/{{userId}}
+
+###
+POST http://{{host}}/{{prefix}}/users
+content-type: {{contentType}}
+
+{
+  "email": "wllka@gmail.com",
+  "password": "1234",
+  "name": "shakra",
+  "surname": "wllka"
+}
+
+###
+PATCH http://{{host}}/{{prefix}}/users/{{userId}}
+content-type: {{contentType}}
+
+{
+  "password": "1234"
+}
+
+###
+POST http://{{host}}/{{prefix}}/auth/login
+content-type: {{contentType}}
+
+{
+  "email": "wllka@gmail.com",
+  "password": "1234"
+}
