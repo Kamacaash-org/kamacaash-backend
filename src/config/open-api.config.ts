@@ -9,8 +9,8 @@ export interface OpenApiConfig {
 export default registerAs(
   'open-api',
   (): OpenApiConfig => ({
-    title: 'SIMAD App API',
-    description: 'Backend for the SIMAD app.',
+    title: 'kamacash App',
+    description: 'Backend for the kamacash app.',
     version: '1.0.0',
   }),
 );

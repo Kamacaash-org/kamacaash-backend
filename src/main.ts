@@ -10,7 +10,7 @@ import { OpenApiConfig } from './config/open-api.config';
 config();
 
 async function bootstrap() {
-  const context = 'NestApplication';
+  const context = 'KamacashApplication';
   const logger = new Logger(context);
   const app: NestApplication = await NestFactory.create(AppModule);
   app.enableCors();

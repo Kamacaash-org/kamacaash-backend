@@ -15,8 +15,8 @@ export interface DatabaseConfig {
 export default registerAs(
   'database',
   (): DatabaseConfig => ({
-    host: process.env.DATABASE_HOST || 'localhost:27017',
-    name: process.env.DATABASE_NAME || 'simad-app_development',
+    host: process.env.DATABASE_HOST || 'myfirstcluster.8edhtqd.mongodb.net',
+    name: process.env.DATABASE_NAME || 'kamacash-app-dev',
     user: process.env.DATABASE_USER || null,
     password: process.env.DATABASE_PASSWORD || null,
     admin: process.env.DATABASE_ADMIN === 'true' || false,

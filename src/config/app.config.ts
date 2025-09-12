@@ -21,7 +21,7 @@ export default registerAs(
   'app',
   (): AppConfig => ({
     env: process.env.NODE_ENV || 'development',
-    name: process.env.APP_NAME || 'simad-app-api',
+    name: process.env.APP_NAME || 'kamacash-app-api',
     globalPrefix: process.env.APP_GLOBAL_PREFIX || 'api/v1',
     timeout: parseInt(process.env.APP_TIMEOUT) || 7000,
     language: process.env.LANGUAGE || 'en',
