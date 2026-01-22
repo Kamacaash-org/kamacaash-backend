@@ -38,8 +38,8 @@ export class UsersService {
       throw new ConflictException(`User with that email already exists`);
     }
     const passwordHash = await hash(user.password, 10);
-    const userToCreate: User = { ...user, userId: randomUUID(), password: passwordHash };
-    return this.userModel.create(userToCreate);
+    const userToCreate = { ...user, userId: randomUUID(), password: passwordHash };
+    return this.userModel.create(userToCreate as any);
   }
 
   async updateById(userId: string, userUpdates: UpdateUserDto): Promise<User> {

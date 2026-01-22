@@ -37,9 +37,8 @@ export class DatabaseService implements MongooseOptionsFactory {
   }
 
   createMongooseOptions(): MongooseModuleOptions {
-    const uri = `mongodb${this.srv ? '+srv' : ''}://${this.host}/${
-      this.database
-    }${this.options}`;
+    const uri = `mongodb${this.srv ? '+srv' : ''}://${this.host}/${this.database
+      }${this.options}`;
 
     if (this.env !== 'production' && this.env !== 'testing') {
       mongoose.set('debug', this.debug);
@@ -47,9 +46,6 @@ export class DatabaseService implements MongooseOptionsFactory {
 
     const mongooseOptions: MongooseModuleOptions = {
       uri,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // useMongoClient: true
     };
 
     if (this.admin) {
