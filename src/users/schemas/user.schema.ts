@@ -19,6 +19,33 @@ export class User {
   })
   userId: string;
   @ApiProperty({
+    example: 'user@example.com',
+    description: 'The email of the user',
+  })
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @ApiProperty({
+    example: 'strongPassword',
+    description: 'The hashed password of the user',
+  })
+  @Prop({ required: true })
+  password: string;
+
+  @ApiProperty({
+    example: 'John',
+    description: 'First name',
+  })
+  @Prop()
+  name: string;
+
+  @ApiProperty({
+    example: 'Doe',
+    description: 'Surname',
+  })
+  @Prop()
+  surname: string;
+  @ApiProperty({
     example: '+1234567890',
     description: 'The E.164 phone number of the user',
   })

@@ -22,13 +22,13 @@ import { LocalStrategy } from './strategies/local.strategy';
         return {
           secret: authConfig.jwt.secretKey,
           signOptions: {
-            expiresIn: authConfig.jwt.expirationTime,
+            expiresIn: authConfig.jwt.expirationTime as any,
           },
-        };
+        } as any;
       },
     }),
   ],
   providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
 })
-export class AuthModule {}
+export class AuthModule { }
