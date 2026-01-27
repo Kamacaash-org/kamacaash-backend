@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SurplusPackage, SurplusPackageSchema } from './schemas/surplus-package.schema';
 import { SurplusPackagesService } from './surplus-packages.service';
@@ -8,9 +8,10 @@ import { UsersModule } from '../users/users.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: SurplusPackage.name, schema: SurplusPackageSchema }]), ReviewsModule, UsersModule],
+  imports: [MongooseModule.forFeature([{ name: SurplusPackage.name, schema: SurplusPackageSchema }]), ReviewsModule, forwardRef(() => UsersModule), //  THIS FIXES UserModel
+  ],
   providers: [SurplusPackagesService, S3Service],
   controllers: [SurplusPackagesController],
-  exports: [SurplusPackagesService],
+  exports: [SurplusPackagesService, MongooseModule],
 })
 export class SurplusPackagesModule { }

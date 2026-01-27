@@ -12,6 +12,9 @@ import { SurplusPackagesModule } from 'src/modules/surplus-packages/surplus-pack
 import { StaffModule } from 'src/modules/staff/staff.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { OrdersModule } from 'src/modules/orders/orders.module';
+import { ReviewsModule } from 'src/modules/reviews/reviews.module';
+import { FavoritesModule } from 'src/modules/favorites/favorites.module';
+import { UserOrdersModule } from 'src/modules/users/user-orders.module';
 
 
 
@@ -23,6 +26,9 @@ import { OrdersModule } from 'src/modules/orders/orders.module';
         StaffModule,
         UsersModule,
         OrdersModule,
+        ReviewsModule,
+        FavoritesModule,
+        UserOrdersModule,
     ],
     controllers: [
         AppSurplusCategoriesController,
@@ -32,6 +38,7 @@ import { OrdersModule } from 'src/modules/orders/orders.module';
         AppFavoritesController,
         AppBusinessesController,
         AppUsersController,
+
     ],
 })
 export class AppMobileModule { }

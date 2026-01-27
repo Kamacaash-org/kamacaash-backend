@@ -7,9 +7,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { DeleteUserResponse } from './dto/delete-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
-import { Order, OrderDocument } from '../orders/schemas/order.schema';
 
 import { generateOTP, sendOTP } from 'src/utils/otpHelpers';
+import { UserOrdersService } from './user-orders.service';
 
 const LOCKOUT_DURATION = 60 * 60 * 1000; // 1 hour
 const MAX_FAILED_ATTEMPTS = 3;
@@ -19,7 +19,7 @@ export class UsersService {
   constructor(
 
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    private readonly userOrdersService: UserOrdersService,
   ) { }
 
   async findAll(): Promise<User[]> {
@@ -62,6 +62,15 @@ export class UsersService {
 
   async remove(userId: string): Promise<DeleteUserResponse> {
     return this.userModel.deleteOne({ userId }).lean();
+  }
+
+
+
+  async findByIdWithProfile(userId: string) {
+    return this.userModel
+      .findById(userId)
+      .select('fullName phoneNumber avatar')
+      .exec();
   }
 
 
@@ -178,23 +187,10 @@ export class UsersService {
     const user = await this.userModel.findById(userId).exec();
     if (!user) throw new NotFoundException('User not found');
 
-    const orders = await this.orderModel.aggregate([
-      { $match: { userId: user._id, status: { $in: ['PAID', 'COMPLETED'] } } },
-      {
-        $group: {
-          _id: null,
-          totalOrders: { $sum: 1 },
-          totalSavedMoney: {
-            $sum: {
-              $multiply: [
-                { $subtract: ['$packageSnapshot.originalPrice', '$packageSnapshot.offerPrice'] },
-                '$quantity',
-              ],
-            },
-          },
-        },
-      },
-    ]).exec();
+    const orders = await this.userOrdersService.getUserOrderSummary(userId);
+
+
+
 
     const totalOrders = orders.length > 0 ? orders[0].totalOrders : 0;
     const totalSavedMoney = orders.length > 0 ? orders[0].totalSavedMoney : 0;

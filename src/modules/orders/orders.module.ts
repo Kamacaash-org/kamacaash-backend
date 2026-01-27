@@ -1,23 +1,32 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-// schemas required at runtime to avoid deep TS instantiation issues
 import { OrdersService } from './orders.service';
 import { OrdersController } from '../../api/admin/orders.controller';
 
+// 👇 IMPORT MODULES (not services)
+import { SurplusPackagesModule } from '../surplus-packages/surplus-packages.module';
+import { ReviewsModule } from '../reviews/reviews.module';
+import { ExpiredReservationModule } from '../expired-reservations/expired-reservation.module';
+import { UsersModule } from '../users/users.module';
+
+
 @Module({
     imports: [
-        // require schemas at runtime to avoid complex compile-time types
+        // Runtime schema loading (your workaround is fine 👍)
         ((): any => {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const OrderSchema = require('./schemas/order.schema').OrderSchema;
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const CancelledOrderSchema = require('../cancelled-orders/schemas/cancelled-order.schema').CancelledOrderSchema;
-            const models: any = [
+            const CancelledOrderSchema = require('../cancelled-orders/schemas/cancelled-order.schema')
+                .CancelledOrderSchema;
+
+            return MongooseModule.forFeature([
                 { name: 'Order', schema: OrderSchema },
                 { name: 'CancelledOrder', schema: CancelledOrderSchema },
-            ];
-            return MongooseModule.forFeature(models);
+            ]);
         })(),
+        forwardRef(() => SurplusPackagesModule), // ✅ FIX
+        forwardRef(() => ReviewsModule),
+        forwardRef(() => ExpiredReservationModule),
+        forwardRef(() => UsersModule)
     ],
     providers: [OrdersService],
     controllers: [OrdersController],

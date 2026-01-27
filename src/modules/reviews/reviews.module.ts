@@ -6,6 +6,6 @@ import { BusinessesModule } from '../businesses/businesses.module';
 @Module({
     imports: [MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]), BusinessesModule],
     providers: [ReviewsService],
-    exports: [ReviewsService],
+    exports: [ReviewsService, MongooseModule],
 })
 export class ReviewsModule { }

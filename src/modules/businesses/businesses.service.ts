@@ -170,6 +170,9 @@ export class BusinessesService {
 
 
 
+    async findBusinessById(businessId: string) {
+        return this.businessModel.findById(businessId).exec();
+    }
 
 
     //#region 

@@ -3,17 +3,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Favorite, FavoriteDocument } from './schemas/favorite.schema';
 import { Business, BusinessDocument } from '../businesses/schemas/business.schema';
+import { BusinessesService } from '../businesses/businesses.service';
 
 @Injectable()
 export class FavoritesService {
     constructor(
         @InjectModel(Favorite.name) private favModel: Model<FavoriteDocument>,
-        @InjectModel(Business.name) private businessModel: Model<BusinessDocument>,
+        private readonly businessService: BusinessesService,
     ) { }
 
     async addFavorite(userId: string, businessId: string, note?: string) {
         if (!userId || !businessId) throw new Error('userId and businessId are required');
-        const business = await this.businessModel.findById(businessId).exec();
+        const business = await this.businessService.findById(businessId);
+
         if (!business) throw new Error('Business not found');
 
         let favorite = await this.favModel.findOne({ userId, businessId }).exec();

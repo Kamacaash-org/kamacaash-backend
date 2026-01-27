@@ -1,15 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import mongoose from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema';
-import { SurplusPackage, SurplusPackageDocument } from '../surplus-packages/schemas/surplus-package.schema';
 import { CancelledOrder, CancelledOrderDocument } from '../cancelled-orders/schemas/cancelled-order.schema';
-
-import { ExpiredReservation, ExpiredReservationDocument } from '../expired-reservations/schemas/expired-reservation.schema';
-import { Review, ReviewDocument } from '../reviews/schemas/review.schema';
 import { SurplusPackagesService } from '../surplus-packages/surplus-packages.service';
 import { ReviewsService } from '../reviews/reviews.service';
+import { ExpiredService } from '../expired-reservations/expired-reservation.service';
 
 
 @Injectable()
@@ -17,10 +14,10 @@ export class OrdersService {
     constructor(
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
         @InjectModel(CancelledOrder.name) private cancelledModel: Model<CancelledOrderDocument>,
+        @Inject(forwardRef(() => SurplusPackagesService))
         private readonly surplusPackagesService: SurplusPackagesService,
         private readonly reviewsService: ReviewsService,
-
-
+        private readonly expiredService: ExpiredService,
     ) {
 
     }
@@ -414,7 +411,7 @@ export class OrdersService {
                     await pkg.save({ session });
                 }
 
-                await this.expiredModel.create([
+                await this.expiredService.expireBySystem(
                     {
                         orderId: order.orderId,
                         userId: order.userId,
@@ -422,11 +419,11 @@ export class OrdersService {
                         packageId: order.packageId,
                         packageSnapshot: order.packageSnapshot,
                         amount: order.amount,
-                        reservedAt: order.reserved_at,
-                        quantityReserved: order.quantity,
-                        reason: 'This reservation was automatically cancelled after exceeding the allowed time without confirmation.',
+                        reserved_at: order.reserved_at,
+                        quantity: order.quantity,
                     },
-                ], { session });
+                    session,
+                );
 
                 await this.orderModel.findByIdAndDelete(order._id).session(session);
             }
@@ -465,20 +462,7 @@ export class OrdersService {
                 await pkg.save({ session });
             }
 
-            await this.expiredModel.create([
-                {
-                    orderId: order.orderId,
-                    userId: order.userId,
-                    businessId: order.businessId,
-                    packageId: order.packageId,
-                    packageSnapshot: order.packageSnapshot,
-                    amount: order.amount,
-                    reservedAt: order.reserved_at,
-                    quantityReserved: order.quantity,
-                    cancelledByUser: true,
-                    cancelledAt: new Date(),
-                },
-            ], { session });
+            await this.expiredService.expireByUser(order, session);
 
             await this.orderModel.findByIdAndDelete(order._id).session(session);
 
@@ -513,7 +497,7 @@ export class OrdersService {
             .sort({ cancelledAt: -1 })
             .exec();
 
-        const reviewedBusinesses = await this.reviewModel.find({ userId }).distinct('businessId').exec();
+        const reviewedBusinesses = await this.reviewsService.getReviewedBusinessIdsByUser(userId);
 
         const formatOrder = (order: any) => ({
             orderId: order.orderId,
@@ -544,4 +528,38 @@ export class OrdersService {
     }
 
     // #endregion
+
+
+    async getUserPaidOrCompletedOrdersSummary(userId: string) {
+        const orders = await this.orderModel.aggregate([
+            {
+                $match: {
+                    userId: userId,
+                    status: { $in: ['PAID', 'COMPLETED'] },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalOrders: { $sum: 1 },
+                    totalSavedMoney: {
+                        $sum: {
+                            $multiply: [
+                                {
+                                    $subtract: [
+                                        '$packageSnapshot.originalPrice',
+                                        '$packageSnapshot.offerPrice',
+                                    ],
+                                },
+                                '$quantity',
+                            ],
+                        },
+                    },
+                },
+            },
+        ]).exec();
+
+        return orders[0] || { totalOrders: 0, totalSavedMoney: 0 };
+    }
+
 }

@@ -6,7 +6,8 @@ import { Review, ReviewDocument } from '../reviews/schemas/review.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 
 import { S3Service } from '../../services/s3/s3.service';
-
+import { UsersService } from '../users/users.service';
+import { ReviewsService } from '../reviews/reviews.service';
 const calculateDiscount = (originalPrice: number, offerPrice: number) => {
     return originalPrice > 0 ? Math.round(((originalPrice - offerPrice) / originalPrice) * 100) : 0;
 };
@@ -17,8 +18,8 @@ export class SurplusPackagesService {
 
     constructor(
         @InjectModel(SurplusPackage.name) private surplusModel: Model<SurplusPackageDocument>,
-        @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        private readonly usersService: UsersService,
+        private readonly reviewsService: ReviewsService,
 
         private readonly s3Service: S3Service,
     ) { }
@@ -112,10 +113,10 @@ export class SurplusPackagesService {
 
         const result = await Promise.all(
             packages.map(async (pkg: any) => {
-                const reviewAggregation = await this.reviewModel.aggregate([
-                    { $match: { businessId: pkg.businessId._id } },
-                    { $group: { _id: null, totalRating: { $sum: '$rating' }, count: { $sum: 1 } } },
-                ]).exec();
+                const reviewAggregation = await this.reviewsService.getBusinessRatingAggregation(
+                    pkg.businessId._id,
+                );
+
 
                 const totalUsersReviewedBusiness = reviewAggregation[0]?.count || 0;
                 const businessReviewRate = totalUsersReviewedBusiness > 0 ? reviewAggregation[0].totalRating / totalUsersReviewedBusiness : 0;
@@ -161,13 +162,16 @@ export class SurplusPackagesService {
 
         if (!pkg || !pkg.isActive) throw new Error('Package not found or inactive');
 
-        const businessReviews = await this.reviewModel.find({ businessId: pkg.businessId._id }).sort({ createdAt: -1 }).exec();
+        const businessReviews = await this.reviewsService.getBusinessReviews(
+            pkg.businessId._id,
+        );
+
         const totalUsersReviewedBusiness = businessReviews.length;
         const businessReviewRate = totalUsersReviewedBusiness > 0 ? businessReviews.reduce((acc: any, r: any) => acc + r.rating, 0) / totalUsersReviewedBusiness : 0;
 
         const lastThreeReviews = await Promise.all(
             businessReviews.slice(0, 3).map(async (r: any) => {
-                const user = await this.userModel.findById(r.userId).select('fullName phoneNumber avatar').exec();
+                const user = await this.usersService.findByIdWithProfile(r.userId);
                 return {
                     fullName: user?.fullName || 'Anonymous',
                     no_of_likes: r.no_of_likes || 0,
