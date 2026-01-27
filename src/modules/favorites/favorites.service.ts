@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Favorite, FavoriteDocument } from './schemas/favorite.schema';
+import { Business, BusinessDocument } from '../businesses/schemas/business.schema';
 
 @Injectable()
-export class AppFavoritesService {
-    constructor(@InjectModel('Favorite') private favModel: Model<any>, @InjectModel('Business') private businessModel: Model<any>) { }
+export class FavoritesService {
+    constructor(
+        @InjectModel(Favorite.name) private favModel: Model<FavoriteDocument>,
+        @InjectModel(Business.name) private businessModel: Model<BusinessDocument>,
+    ) { }
 
     async addFavorite(userId: string, businessId: string, note?: string) {
         if (!userId || !businessId) throw new Error('userId and businessId are required');

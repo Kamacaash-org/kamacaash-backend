@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { AppOrdersService } from '../../app-mobile/orders.service';
+import { OrdersService } from 'src/modules/orders/orders.service';
 
 @Controller('app/orders')
 export class AppOrdersController {
-    constructor(private readonly service: AppOrdersService) { }
+    constructor(private readonly service: OrdersService) { }
 
     @Post('reserve')
     async reserve(@Body() body: any) {

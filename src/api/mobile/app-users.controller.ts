@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
-import { AppUsersService } from '../../app-mobile/app-users.service';
+import { UsersService } from 'src/modules/users/users.service';
 
 @Controller('admin/app-users')
 export class AppUsersController {
-    constructor(private readonly service: AppUsersService) { }
+    constructor(private readonly service: UsersService) { }
 
     @Post('register')
     async register(@Body('phoneNumber') phoneNumber: string) {

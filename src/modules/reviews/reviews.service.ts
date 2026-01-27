@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { Review, ReviewDocument } from './schemas/review.schema';
+import { Business, BusinessDocument } from '../businesses/schemas/business.schema';
 
 @Injectable()
-export class AppReviewsService {
+export class ReviewsService {
     constructor(
-        @InjectModel('Review') private reviewModel: Model<any>,
-        @InjectModel('Business') private businessModel: Model<any>,
+
+        @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
+        @InjectModel(Business.name) private businessModel: Model<BusinessDocument>,
+
     ) { }
 
     async reviewBusiness(payload: { userId: string; businessId: string; orderId?: string; rating: number; comment?: string }) {
@@ -30,4 +34,16 @@ export class AppReviewsService {
         await review.save();
         return { review, action };
     }
+
+
+
+
+    // reviews.service.ts
+    async hasUserReviewedBusiness(
+        userId: Types.ObjectId,
+        businessId: Types.ObjectId,
+    ) {
+        return this.reviewModel.exists({ userId, businessId });
+    }
+
 }

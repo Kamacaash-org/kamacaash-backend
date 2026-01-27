@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { ClientSession, Model, ObjectId, Types } from 'mongoose';
 import { SurplusPackage, SurplusPackageDocument } from './schemas/surplus-package.schema';
 import { Review, ReviewDocument } from '../reviews/schemas/review.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
@@ -70,6 +70,30 @@ export class SurplusPackagesService {
         }
         await this.surplusModel.deleteOne({ _id: id }).exec();
         return { deleted: true };
+    }
+
+
+
+    // surplus-packages.service.ts
+    async getPackageForOrder(packageId: string, session?: ClientSession) {
+        return this.surplusModel
+            .findById(packageId)
+            .session(session)
+            .select(
+                'title businessId originalPrice offerPrice pickupStart pickupEnd quantityAvailable',
+            )
+            .lean();
+    }
+
+    // surplus-packages.service.ts
+    async findByIdForOrder(
+        packageId: Types.ObjectId,
+        session?: ClientSession,
+    ) {
+        return this.surplusModel
+            .findById(packageId)
+            .session(session)
+            .exec();
     }
 
 
