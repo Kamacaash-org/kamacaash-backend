@@ -21,6 +21,6 @@ import { OrdersController } from '../../api/admin/orders.controller';
     ],
     providers: [OrdersService],
     controllers: [OrdersController],
-    exports: [OrdersService],
+    exports: [OrdersService, MongooseModule],
 })
 export class OrdersModule { }

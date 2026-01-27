@@ -1,16 +1,17 @@
 import { Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { User } from 'src/users/schemas/user.schema';
+
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import { LoginRequest } from './dto/login-request.dto';
 import { LoginResponse } from './dto/login-response.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { User } from 'src/modules/users/schemas/user.schema';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)

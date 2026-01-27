@@ -8,6 +8,8 @@ import { CancelledOrder, CancelledOrderDocument } from '../cancelled-orders/sche
 
 import { ExpiredReservation, ExpiredReservationDocument } from '../expired-reservations/schemas/expired-reservation.schema';
 import { Review, ReviewDocument } from '../reviews/schemas/review.schema';
+import { SurplusPackagesService } from '../surplus-packages/surplus-packages.service';
+import { ReviewsService } from '../reviews/reviews.service';
 
 
 @Injectable()
@@ -15,9 +17,10 @@ export class OrdersService {
     constructor(
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
         @InjectModel(CancelledOrder.name) private cancelledModel: Model<CancelledOrderDocument>,
-        @InjectModel(SurplusPackage.name) private pkgModel: Model<SurplusPackageDocument>,
-        @InjectModel(ExpiredReservation.name) private expiredModel: Model<ExpiredReservationDocument>,
-        @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
+        private readonly surplusPackagesService: SurplusPackagesService,
+        private readonly reviewsService: ReviewsService,
+
+
     ) {
 
     }
@@ -112,7 +115,12 @@ export class OrdersService {
 
             if (!order) throw new NotFoundException('Order not found or cannot be cancelled');
 
-            const surplusPackage = await this.pkgModel.findById(order.packageId).session(session).exec();
+            const surplusPackage =
+                await this.surplusPackagesService.findByIdForOrder(
+                    order.packageId,
+                    session,
+                );
+
             if (!surplusPackage) throw new NotFoundException('Associated package not found');
 
             surplusPackage.quantityAvailable = (surplusPackage.quantityAvailable || 0) + order.quantity;
@@ -174,7 +182,12 @@ export class OrdersService {
             (order as any).completedBy = completedBy as any;
             await order.save({ session });
 
-            const surplusPackage = await this.pkgModel.findById(order.packageId).session(session).exec();
+            const surplusPackage =
+                await this.surplusPackagesService.findByIdForOrder(
+                    order.packageId,
+                    session,
+                );
+
             if (!surplusPackage) throw new NotFoundException('Associated package not found');
 
             surplusPackage.totalOrders = (surplusPackage.totalOrders || 0) + order.quantity;
@@ -314,7 +327,11 @@ export class OrdersService {
             }
             if (quantity < 1) throw new Error('Quantity must be at least 1');
 
-            const pkg = await this.pkgModel.findById(orderData.packageId).session(session).select('title businessId originalPrice offerPrice pickupStart pickupEnd quantityAvailable');
+            const pkg = await this.surplusPackagesService.getPackageForOrder(
+                orderData.packageId,
+                session,
+            );
+
             if (!pkg) throw new Error('Package not found');
             if (pkg.quantityAvailable < quantity) throw new Error('Not enough quantity available');
 
@@ -367,7 +384,12 @@ export class OrdersService {
 
         if (!order) throw new Error('Order not found, already processed, or locked by system');
 
-        const hasUserReviewed = await this.reviewModel.exists({ userId: order.userId, businessId: order.businessId });
+        const hasUserReviewed =
+            await this.reviewsService.hasUserReviewedBusiness(
+                order.userId,
+                order.businessId,
+            );
+
         return { orderId: order.orderId, pinCode: order.pinCode, hasUserReviewed: !!hasUserReviewed };
     }
 
@@ -381,7 +403,12 @@ export class OrdersService {
             for (const order of expiredOrders) {
                 order.locked = true;
                 await order.save({ session });
-                const pkg = await this.pkgModel.findById(order.packageId).session(session);
+                const pkg =
+                    await this.surplusPackagesService.findByIdForOrder(
+                        order.packageId,
+                        session,
+                    );
+
                 if (pkg) {
                     pkg.quantityAvailable += order.quantity;
                     await pkg.save({ session });
@@ -432,7 +459,7 @@ export class OrdersService {
             order.locked = true;
             await order.save({ session });
 
-            const pkg = await this.pkgModel.findById(order.packageId).session(session);
+            const pkg = await this.surplusPackagesService.findByIdForOrder(order.packageId, session);
             if (pkg) {
                 pkg.quantityAvailable += order.quantity;
                 await pkg.save({ session });

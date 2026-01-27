@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { AppReviewsService } from '../../app-mobile/reviews.service';
+import { ReviewsService } from 'src/modules/reviews/reviews.service';
 
 @Controller('app/reviews')
 export class AppReviewsController {
-    constructor(private readonly service: AppReviewsService) { }
+    constructor(private readonly service: ReviewsService) { }
 
     @Post('business')
     async reviewBusiness(@Body() body: { userId: string; businessId: string; orderId?: string; rating: number; comment?: string }) {

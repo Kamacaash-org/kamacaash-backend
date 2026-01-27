@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateUserDto } from '../../users/dto/create-user.dto';
-import { DeleteUserResponse } from '../../users/dto/delete-response.dto';
-import { FindOneParams } from '../../users/dto/find-one-params.dto';
-import { UpdateUserDto } from '../../users/dto/update-user.dto';
-import { User } from '../../users/schemas/user.schema';
-import { UsersService } from '../../users/users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
+import { DeleteUserResponse } from 'src/modules/users/dto/delete-response.dto';
+import { FindOneParams } from 'src/modules/users/dto/find-one-params.dto';
+import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
+import { User } from 'src/modules/users/schemas/user.schema';
+import { UsersService } from 'src/modules/users/users.service';
 
 // @UseInterceptors(ClassSerializerInterceptor)
 @ApiTags('users')

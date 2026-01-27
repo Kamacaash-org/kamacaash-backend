@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { AppFavoritesService } from '../../modules/favorites/favorites.service';
+import { FavoritesService } from '../../modules/favorites/favorites.service';
 
 @Controller('app/favorites')
 export class AppFavoritesController {
-    constructor(private readonly service: AppFavoritesService) { }
+    constructor(private readonly service: FavoritesService) { }
 
     @Post('add')
     async add(@Body() body: { userId: string; businessId: string; note?: string }) {

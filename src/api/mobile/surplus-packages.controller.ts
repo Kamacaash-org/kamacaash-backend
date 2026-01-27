@@ -1,9 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { AppSurplusPackagesService } from '../../app-mobile/surplus-packages.service';
+import { SurplusPackagesService } from 'src/modules/surplus-packages/surplus-packages.service';
 
 @Controller('app/surplus-packages')
 export class AppSurplusPackagesController {
-    constructor(private readonly service: AppSurplusPackagesService) { }
+    constructor(private readonly service: SurplusPackagesService) { }
 
     @Get()
     async list() {
