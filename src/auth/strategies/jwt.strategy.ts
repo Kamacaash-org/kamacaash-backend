@@ -52,7 +52,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       return await this.authService.buildUserObject(staff);
     } catch (error) {
-      this.logger.error(`JWT validation error for payload: ${JSON.stringify(payload)}`, error.stack);
+      this.logger.error(
+        `JWT validation error for payload: ${JSON.stringify(payload)}`,
+        error.stack,
+      );
       throw error;
     }
   }

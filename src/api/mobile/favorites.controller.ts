@@ -1,37 +1,41 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, HttpException, HttpStatus } from '@nestjs/common';
 import { FavoritesService } from '../../modules/favorites/favorites.service';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 @Controller('app/favorites')
 export class AppFavoritesController {
   constructor(private readonly service: FavoritesService) {}
 
   @Post('add')
-  async add(@Body() body: { userId: string; businessId: string; note?: string }) {
+  async add(
+    @Body() body: { userId: string; businessId: string; note?: string },
+  ): Promise<ApiResponse<any>> {
     try {
       const result = await this.service.addFavorite(body.userId, body.businessId, body.note);
-      return { success: true, data: result, message: 'Business added to favorites' };
+      return new ApiResponse(201, result, MESSAGES.FAVORITE.ADD);
     } catch (err: any) {
-      return { success: false, message: err.message || 'Error' };
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }
   }
 
   @Post('remove')
-  async remove(@Body() body: { userId: string; businessId: string }) {
+  async remove(@Body() body: { userId: string; businessId: string }): Promise<ApiResponse<any>> {
     try {
       const result = await this.service.removeFavorite(body.userId, body.businessId);
-      return { success: true, data: result, message: 'Business removed from favorites' };
+      return new ApiResponse(200, result, MESSAGES.FAVORITE.REMOVE);
     } catch (err: any) {
-      return { success: false, message: err.message || 'Error' };
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }
   }
 
   @Get(':userId')
-  async list(@Param('userId') userId: string) {
+  async list(@Param('userId') userId: string): Promise<ApiResponse<any>> {
     try {
       const result = await this.service.getUserFavorites(userId);
-      return { success: true, data: result, message: 'User favorites fetched successfully' };
+      return new ApiResponse(200, result, MESSAGES.FAVORITE.GET_ALL);
     } catch (err: any) {
-      return { success: false, message: err.message || 'Error' };
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }
   }
 }

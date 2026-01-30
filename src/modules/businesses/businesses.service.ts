@@ -10,7 +10,7 @@ export class BusinessesService {
   constructor(
     @InjectModel(Business.name) private businessModel: Model<BusinessDocument>,
     private readonly s3Service: S3Service,
-  ) { }
+  ) {}
 
   async createOrUpdate(data: any, files: any = {}) {
     // Normalize email

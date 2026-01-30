@@ -5,9 +5,11 @@ import { ExpiredReservation, ExpiredReservationSchema } from './schemas/expired-
 import { ExpiredService } from './expired-reservation.service';
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: ExpiredReservation.name, schema: ExpiredReservationSchema }]),
+    MongooseModule.forFeature([
+      { name: ExpiredReservation.name, schema: ExpiredReservationSchema },
+    ]),
   ],
   providers: [ExpiredService],
   exports: [ExpiredService, MongooseModule],
 })
-export class ExpiredReservationModule { }
+export class ExpiredReservationModule {}

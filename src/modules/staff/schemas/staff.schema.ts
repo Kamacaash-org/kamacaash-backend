@@ -36,6 +36,14 @@ export class Staff {
   @Prop({ required: true })
   lastName: string;
 
+  @ApiProperty({
+    example: 'MALE',
+    enum: ['MALE', 'FEMALE'],
+    description: 'Sex of the staff member',
+  })
+  @Prop({ required: true, enum: ['MALE', 'FEMALE'] })
+  sex: string;
+
   @ApiProperty({ example: 'strongPassword', description: 'Password (min 6 chars)' })
   @Prop({ required: true, minlength: 6 })
   @Exclude()
@@ -96,7 +104,6 @@ StaffSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
-
 
 // Instance method to validate password
 StaffSchema.methods.correctPassword = async function (candidatePassword: string) {

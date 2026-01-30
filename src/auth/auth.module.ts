@@ -35,4 +35,4 @@ import { BusinessesModule } from 'src/modules/businesses/businesses.module';
   providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}

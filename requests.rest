@@ -38,3 +38,16 @@ content-type: {{contentType}}
   "email": "wllka@gmail.com",
   "password": "1234"
 }
+
+###
+
+POST http://{{host}}/{{prefix}}/admin/staff
+content-type: {{contentType}}
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890",
+  "sex": "MALE"
+}

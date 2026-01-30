@@ -15,24 +15,30 @@ import { StaffService } from '../../modules/staff/staff.service';
 import { CreateStaffDto } from '../../modules/staff/dto/create-staff.dto';
 import { UpdateStaffDto } from '../../modules/staff/dto/update-staff.dto';
 import { StaffResponseDto } from '../../modules/staff/dto/staff-response.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 @Controller('admin/staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) { }
+  constructor(private readonly staffService: StaffService) {}
 
   @Get()
-  async getAll(): Promise<StaffResponseDto[]> {
+  async getAll(): Promise<ApiResponse<StaffResponseDto[]>> {
     const staffList = await this.staffService.findAll();
-    return plainToClass(StaffResponseDto, staffList, { excludeExtraneousValues: true });
+    const data = plainToInstance(StaffResponseDto, staffList, {
+      excludeExtraneousValues: true,
+    });
+    return new ApiResponse(200, data, MESSAGES.STAFF.GET_ALL);
   }
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  async create(@Body() dto: CreateStaffDto): Promise<StaffResponseDto> {
+  async create(@Body() dto: CreateStaffDto): Promise<ApiResponse<StaffResponseDto>> {
     try {
       const staff = await this.staffService.create(dto);
-      return plainToClass(StaffResponseDto, staff, { excludeExtraneousValues: true });
+      const data = plainToInstance(StaffResponseDto, staff, { excludeExtraneousValues: true });
+      return new ApiResponse(201, data, MESSAGES.STAFF.CREATE);
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to create staff',
@@ -43,10 +49,14 @@ export class StaffController {
 
   @Put(':id')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async update(@Param('id') id: string, @Body() dto: UpdateStaffDto): Promise<StaffResponseDto> {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStaffDto,
+  ): Promise<ApiResponse<StaffResponseDto>> {
     try {
       const staff = await this.staffService.update(id, dto);
-      return plainToClass(StaffResponseDto, staff, { excludeExtraneousValues: true });
+      const data = plainToInstance(StaffResponseDto, staff, { excludeExtraneousValues: true });
+      return new ApiResponse(200, data, MESSAGES.STAFF.UPDATE);
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to update staff',
@@ -56,9 +66,10 @@ export class StaffController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id') id: string): Promise<ApiResponse<any>> {
     try {
-      return await this.staffService.softDelete(id);
+      await this.staffService.softDelete(id);
+      return new ApiResponse(200, null, MESSAGES.STAFF.DELETE);
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to delete staff',

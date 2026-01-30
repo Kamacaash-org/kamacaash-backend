@@ -16,4 +16,4 @@ import { ReviewsModule } from '../reviews/reviews.module';
   providers: [SurplusPackagesService],
   exports: [SurplusPackagesService, MongooseModule],
 })
-export class SurplusPackagesModule { }
+export class SurplusPackagesModule {}

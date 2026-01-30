@@ -1,0 +1,69 @@
+export const MESSAGES = {
+  STAFF: {
+    GET_ALL: 'Staff members retrieved successfully',
+    CREATE: 'Staff member created successfully',
+    UPDATE: 'Staff member updated successfully',
+    DELETE: 'Staff member deleted successfully',
+  },
+  BUSINESS: {
+    GET_ALL: 'Businesses retrieved successfully',
+    GET_BY_ID: 'Business retrieved successfully',
+    CREATE_OR_UPDATE: 'Business created/updated successfully',
+    ARCHIVE: 'Business archived successfully',
+    TOGGLE_ACTIVE: 'Business active status updated successfully',
+    APPROVE: 'Business approved successfully',
+    REJECT: 'Business rejected successfully',
+    SIGN_CONTRACT: 'Contract signed successfully',
+  },
+  ADMIN_USER: {
+    GET_ALL: 'Users retrieved successfully',
+    GET_BY_ID: 'User retrieved successfully',
+    CREATE: 'User created successfully',
+    UPDATE: 'User updated successfully',
+    DELETE: 'User deleted successfully',
+  },
+  SURPLUS_CATEGORY: {
+    GET_ALL: 'Surplus categories retrieved successfully',
+    GET_BY_ID: 'Surplus category retrieved successfully',
+    CREATE: 'Surplus category created successfully',
+    UPDATE: 'Surplus category updated successfully',
+    DELETE: 'Surplus category deleted successfully',
+    ACTIVATE: 'Surplus category activated successfully',
+  },
+  SURPLUS_PACKAGE: {
+    GET_ALL: 'Surplus packages retrieved successfully',
+    CREATE_OR_UPDATE: 'Surplus package created/updated successfully',
+    UPDATE: 'Surplus package updated successfully',
+    DELETE: 'Surplus package deleted successfully',
+    GET_BY_ID: 'Surplus package retrieved successfully',
+  },
+  ADMIN_ORDER: {
+    GET_PENDING: 'Pending orders retrieved successfully',
+    GET_COMPLETED: 'Completed orders retrieved successfully',
+    GET_CANCELLED: 'Cancelled orders retrieved successfully',
+    CANCEL: 'Order cancelled successfully',
+    COMPLETE: 'Order completed successfully',
+  },
+  MOBILE_ORDER: {
+    RESERVE: 'Order reserved successfully',
+    MARK_PAID: 'Order marked as paid successfully',
+    CANCEL_RESERVATION: 'Reservation cancelled successfully',
+    GET_USER_ORDERS: 'User orders fetched successfully',
+  },
+  FAVORITE: {
+    GET_ALL: 'Favorites retrieved successfully',
+    ADD: 'Favorite added successfully',
+    REMOVE: 'Favorite removed successfully',
+  },
+  REVIEW: {
+    CREATE: 'Review created successfully',
+  },
+  USER: {
+    REGISTER: 'User registered successfully',
+    VERIFY_OTP: 'OTP verified successfully',
+    RESEND_OTP: 'OTP resent successfully',
+    UPDATE_PROFILE: 'Profile updated successfully',
+    GET_PROFILE: 'Profile retrieved successfully',
+  },
+  // Add more as needed
+};

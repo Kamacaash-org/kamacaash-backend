@@ -5,11 +5,11 @@ import { Model } from 'mongoose';
 interface StaffData {
   email: string;
   username?: string;
-  countryCode: string;
+  // countryCode: string;
   phone: string;
   firstName: string;
   lastName: string;
-  password: string;
+  // password: string;
   role: string;
   permissions?: string[];
   isAdminApproved?: boolean;
@@ -23,7 +23,13 @@ export class StaffService {
   constructor(@InjectModel('Staff') private staffModel: Model<any>) { }
 
   async findAll() {
-    return this.staffModel.find().sort({ createdAt: -1 }).exec();
+    const result = await this.staffModel.find().sort({ createdAt: -1 }).lean().exec();
+    const withFullName = result.map((item) => ({
+      ...item,
+      fullName: `${item.firstName} ${item.lastName}`,
+    }));
+
+    return withFullName;
   }
 
   async findByEmail(email: string): Promise<any | null> {
@@ -44,8 +50,8 @@ export class StaffService {
     // Apply defaults
     const payload: any = {
       ...data,
-      countryCode: process.env.COUNTRY_CODE || data.countryCode,
-      password: process.env.DEFAULT_STAFF_USER || data.password,
+      countryCode: process.env.COUNTRY_CODE || '+252',
+      password: process.env.DEFAULT_STAFF_USER || 'Kamacaash@123',
     };
 
     const created = new this.staffModel(payload);
@@ -53,7 +59,7 @@ export class StaffService {
   }
 
   async update(id: string, updateData: Partial<StaffData>) {
-    const staff = await this.staffModel.findById(id).exec();
+    const staff = await this.staffModel.findOne({ _id: id }).exec();
     if (!staff) throw new NotFoundException('Staff not found');
 
     if (updateData.phone && updateData.phone !== staff.phone) {
@@ -65,13 +71,14 @@ export class StaffService {
     }
 
     const updated = await this.staffModel
-      .findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+      .findOneAndUpdate({ _id: id }, updateData, { new: true, runValidators: true })
       .exec();
     return updated;
   }
 
   async softDelete(id: string) {
-    const staff = await this.staffModel.findById(id).exec();
+    const staff = await this.staffModel.findOne({ _id: id }).exec();
+
     if (!staff) throw new NotFoundException('Staff not found');
     staff.isActive = false;
     await staff.save();

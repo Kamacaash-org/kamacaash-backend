@@ -10,7 +10,7 @@ export class AuthService {
     private readonly staffService: StaffService,
     private readonly businessesService: BusinessesService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, pass: string): Promise<any> | null {
     // Check for static user first
@@ -20,12 +20,12 @@ export class AuthService {
         username: process.env.ADMIN_USERNAME,
         name: process.env.ADMIN_DEFAULT_NAME,
         role: process.env.ADMIN_DEFAULT_ROLE,
-        lastLogin: new Date()
+        lastLogin: new Date(),
       };
     }
 
     const staff = await this.staffService.findByUsername(username);
-    if (staff && await (staff as any).correctPassword(pass)) {
+    if (staff && (await (staff as any).correctPassword(pass))) {
       const { _id, username, firstName, lastName, role } = staff as any;
       return { staffId: _id, username, firstName, lastName, role };
     }
@@ -54,8 +54,8 @@ export class AuthService {
       role: staff.role,
       ...(business && {
         businessId: business._id,
-        businessName: business.businessName
-      })
+        businessName: business.businessName,
+      }),
     };
   }
 
@@ -72,9 +72,9 @@ export class AuthService {
           username: process.env.ADMIN_USERNAME,
           name: process.env.ADMIN_DEFAULT_NAME,
           role: process.env.ADMIN_DEFAULT_ROLE,
-          lastLogin: new Date()
+          lastLogin: new Date(),
         },
-        accessToken: this.jwtService.sign(payload)
+        accessToken: this.jwtService.sign(payload),
       };
     }
 
@@ -94,7 +94,7 @@ export class AuthService {
 
     return {
       staff: userObject,
-      accessToken: this.jwtService.sign(payload)
+      accessToken: this.jwtService.sign(payload),
     };
   }
 }

@@ -11,6 +11,16 @@ import { ResponseInterceptor } from './utils/response.util';
 import { AllExceptionsFilter } from './utils/exception.filter';
 config();
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
 async function bootstrap() {
   const context = 'KamacashApplication';
   const logger = new Logger(context);
@@ -41,7 +51,10 @@ async function bootstrap() {
   logger.log(`Database running on ${dbConfig.host}/${dbConfig.name}`);
   logger.log(`Server running on ${await app.getUrl()}`);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Bootstrap error:', err);
+  process.exit(1);
+});
 
 /**
  * Setup config for OpenAPI (Swagger)

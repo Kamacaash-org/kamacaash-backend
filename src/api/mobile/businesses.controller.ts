@@ -1,6 +1,8 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 @Controller('app/businesses')
 export class AppBusinessesController {
@@ -11,28 +13,27 @@ export class AppBusinessesController {
   ) {}
 
   @Get()
-  async getbusinessList() {
+  async getbusinessList(): Promise<ApiResponse<any>> {
     const businesses = await this.businessModel
       .find({})
       .populate('category', 'name slug')
       .select('businessName logo category')
       .sort({ createdAt: -1 })
       .exec();
-    return {
-      success: true,
-      data: { count: businesses.length, businesses },
-      message: 'Businesses fetched successfully',
-    };
+    const data = { count: businesses.length, businesses };
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.GET_ALL);
   }
 
   @Get(':businessId')
-  async getBusinessDetailWithActiveDeals(@Param('businessId') businessId: string) {
+  async getBusinessDetailWithActiveDeals(
+    @Param('businessId') businessId: string,
+  ): Promise<ApiResponse<any>> {
     const business = await this.businessModel
       .findById(businessId)
       .populate('category', 'name')
       .exec();
     if (!business || !business.isActive)
-      return { success: false, message: 'Business not found or inactive' };
+      throw new HttpException('Business not found or inactive', HttpStatus.NOT_FOUND);
 
     const activePackages = await this.pkgModel
       .find({ businessId: businessId, isActive: true })
@@ -89,6 +90,6 @@ export class AppBusinessesController {
       activeDeals: deals,
     };
 
-    return { success: true, data: result };
+    return new ApiResponse(200, result, 'Business details retrieved successfully');
   }
 }

@@ -24,7 +24,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly userOrdersService: UserOrdersService,
-  ) { }
+  ) {}
 
   async findAll(): Promise<User[]> {
     return this.userModel.find().lean();

@@ -22,23 +22,29 @@ import { ToggleActiveDto } from '../../modules/businesses/dto/toggle-active.dto'
 import { RejectBusinessDto } from '../../modules/businesses/dto/reject-business.dto';
 import { SignContractDto } from '../../modules/businesses/dto/sign-contract.dto';
 import { BusinessResponseDto } from '../../modules/businesses/dto/business-response.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 @Controller('admin/businesses')
 export class BusinessesController {
-  constructor(private readonly service: BusinessesService) { }
+  constructor(private readonly service: BusinessesService) {}
 
   @Get()
-  async getAll(@Query() query: QueryBusinessDto): Promise<BusinessResponseDto[]> {
+  async getAll(@Query() query: QueryBusinessDto): Promise<ApiResponse<BusinessResponseDto[]>> {
     const businesses = await this.service.findAll(query);
-    return plainToClass(BusinessResponseDto, businesses, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, businesses, {
+      excludeExtraneousValues: true,
+    });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.GET_ALL);
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<BusinessResponseDto> {
+  async getById(@Param('id') id: string): Promise<ApiResponse<BusinessResponseDto>> {
     const b = await this.service.findById(id);
     if (!b) throw new HttpException('Business not found', HttpStatus.NOT_FOUND);
-    return plainToClass(BusinessResponseDto, b, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, b, { excludeExtraneousValues: true });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.GET_BY_ID);
   }
 
   @Post()
@@ -46,7 +52,10 @@ export class BusinessesController {
   @UseInterceptors(
     AnyFilesInterceptor({ storage: memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } }),
   )
-  async createOrUpdate(@Body() body: CreateOrUpdateBusinessDto, @UploadedFiles() files?: any[]): Promise<BusinessResponseDto> {
+  async createOrUpdate(
+    @Body() body: CreateOrUpdateBusinessDto,
+    @UploadedFiles() files?: any[],
+  ): Promise<ApiResponse<BusinessResponseDto>> {
     try {
       // Nest's AnyFilesInterceptor returns array; convert to map by fieldname
       const filesMap: any = {};
@@ -56,36 +65,49 @@ export class BusinessesController {
       });
 
       const business = await this.service.createOrUpdate(body, filesMap);
-      return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+      const data = plainToInstance(BusinessResponseDto, business, {
+        excludeExtraneousValues: true,
+      });
+      return new ApiResponse(201, data, MESSAGES.BUSINESS.CREATE_OR_UPDATE);
     } catch (err: any) {
       throw new HttpException(err.message || 'Failed', err.status || HttpStatus.BAD_REQUEST);
     }
   }
 
   @Post(':id/archive')
-  async archive(@Param('id') id: string): Promise<BusinessResponseDto> {
+  async archive(@Param('id') id: string): Promise<ApiResponse<BusinessResponseDto>> {
     const business = await this.service.archive(id);
-    return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.ARCHIVE);
   }
 
   @Post(':id/active')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async toggleActive(@Param('id') id: string, @Body() body: ToggleActiveDto): Promise<BusinessResponseDto> {
+  async toggleActive(
+    @Param('id') id: string,
+    @Body() body: ToggleActiveDto,
+  ): Promise<ApiResponse<BusinessResponseDto>> {
     const business = await this.service.toggleActive(id, body.isActive);
-    return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.TOGGLE_ACTIVE);
   }
 
   @Post(':id/approve')
-  async approve(@Param('id') id: string): Promise<BusinessResponseDto> {
+  async approve(@Param('id') id: string): Promise<ApiResponse<BusinessResponseDto>> {
     const business = await this.service.approve(id);
-    return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.APPROVE);
   }
 
   @Post(':id/reject')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async reject(@Param('id') id: string, @Body() body: RejectBusinessDto): Promise<BusinessResponseDto> {
+  async reject(
+    @Param('id') id: string,
+    @Body() body: RejectBusinessDto,
+  ): Promise<ApiResponse<BusinessResponseDto>> {
     const business = await this.service.reject(id, body.rejectionReason);
-    return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    const data = plainToInstance(BusinessResponseDto, business, { excludeExtraneousValues: true });
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.REJECT);
   }
 
   @Post('sign-contract')
@@ -96,11 +118,17 @@ export class BusinessesController {
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
-  async signContract(@Body() body: SignContractDto, @UploadedFile() file?: any): Promise<BusinessResponseDto> {
+  async signContract(
+    @Body() body: SignContractDto,
+    @UploadedFile() file?: any,
+  ): Promise<ApiResponse<BusinessResponseDto>> {
     try {
       const { _id } = body;
       const business = await this.service.signContract(_id, file);
-      return plainToClass(BusinessResponseDto, business, { excludeExtraneousValues: true });
+      const data = plainToInstance(BusinessResponseDto, business, {
+        excludeExtraneousValues: true,
+      });
+      return new ApiResponse(200, data, MESSAGES.BUSINESS.SIGN_CONTRACT);
     } catch (err: any) {
       throw new HttpException(err.message || 'Failed', err.status || HttpStatus.BAD_REQUEST);
     }

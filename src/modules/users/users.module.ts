@@ -13,4 +13,4 @@ import { OrdersModule } from '../orders/orders.module';
   providers: [UsersService, UserOrdersService],
   exports: [UsersService, UserOrdersService, MongooseModule],
 })
-export class UsersModule { }
+export class UsersModule {}

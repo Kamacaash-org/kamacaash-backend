@@ -225,21 +225,28 @@ export class Business {
   isArchived: boolean;
 }
 
-export const BusinessSchema = new MongooseSchema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  description: String,
-  logo: String,
-  bannerImage: String,
-  licenseDocument: String,
-  businessType: { type: String, enum: ['RESTAURANT', 'GROCERY', 'BAKERY', 'OTHER'], required: true },
-  phone: String,
-  timeZone: { type: String, default: 'Africa/Mogadishu' },
-  contract: {
-    isSigned: Boolean,
-    signedDate: Date,
-    agreementPdf: String,
+export const BusinessSchema = new MongooseSchema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    description: String,
+    logo: String,
+    bannerImage: String,
+    licenseDocument: String,
+    businessType: {
+      type: String,
+      enum: ['RESTAURANT', 'GROCERY', 'BAKERY', 'OTHER'],
+      required: true,
+    },
+    phone: String,
+    timeZone: { type: String, default: 'Africa/Mogadishu' },
+    contract: {
+      isSigned: Boolean,
+      signedDate: Date,
+      agreementPdf: String,
+    },
+    isActive: { type: Boolean, default: true },
+    isArchived: { type: Boolean, default: false },
   },
-  isActive: { type: Boolean, default: true },
-  isArchived: { type: Boolean, default: false },
-}, { timestamps: true, versionKey: false });
+  { timestamps: true, versionKey: false },
+);

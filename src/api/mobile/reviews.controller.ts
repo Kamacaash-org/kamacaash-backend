@@ -1,5 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, HttpException, HttpStatus } from '@nestjs/common';
 import { ReviewsService } from 'src/modules/reviews/reviews.service';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 @Controller('app/reviews')
 export class AppReviewsController {
@@ -15,12 +17,12 @@ export class AppReviewsController {
       rating: number;
       comment?: string;
     },
-  ) {
+  ): Promise<ApiResponse<any>> {
     try {
       const result = await this.service.reviewBusiness(body);
-      return { success: true, data: result };
+      return new ApiResponse(201, result, MESSAGES.REVIEW.CREATE);
     } catch (err: any) {
-      return { success: false, message: err.message || 'Error' };
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }
   }
 }

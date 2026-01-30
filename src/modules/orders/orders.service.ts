@@ -23,7 +23,7 @@ export class OrdersService {
     private readonly surplusPackagesService: SurplusPackagesService,
     private readonly reviewsService: ReviewsService,
     private readonly expiredService: ExpiredService,
-  ) { }
+  ) {}
 
   // #region ADMIN SERVICES
 
@@ -127,16 +127,19 @@ export class OrdersService {
       surplusPackage.quantityAvailable = (surplusPackage.quantityAvailable || 0) + order.quantity;
       await surplusPackage.save({ session });
 
-      await this.cancelledOrdersService.create({
-        orderId: order.orderId,
-        userId: order.userId,
-        businessId: order.businessId,
-        packageId: order.packageId,
-        packageSnapshot: order.packageSnapshot,
-        amount: order.amount,
-        quantityCancelled: order.quantity,
-        cancellationReason: cancellationReason || 'Cancelled by user',
-      }, session);
+      await this.cancelledOrdersService.create(
+        {
+          orderId: order.orderId,
+          userId: order.userId,
+          businessId: order.businessId,
+          packageId: order.packageId,
+          packageSnapshot: order.packageSnapshot,
+          amount: order.amount,
+          quantityCancelled: order.quantity,
+          cancellationReason: cancellationReason || 'Cancelled by user',
+        },
+        session,
+      );
 
       order.status = 'CANCELLED';
       order.paymentStatus = 'REFUNDED';
@@ -222,15 +225,15 @@ export class OrdersService {
     return completedArr.map((order) => {
       const orderAgeMinutes = order.completedAt
         ? Math.floor(
-          (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) / 60000,
-        )
+            (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) / 60000,
+          )
         : 0;
       const completionDuration =
         order.completedAt && order.reserved_at
           ? Math.floor(
-            (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) /
-            60000,
-          )
+              (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) /
+                60000,
+            )
           : null;
 
       return {
@@ -313,10 +316,10 @@ export class OrdersService {
         },
         orderAgeMinutes: order.cancelledAt
           ? Math.floor(
-            (new Date(order.cancelledAt).getTime() -
-              new Date(order.reserved_at || order.createdAt).getTime()) /
-            60000,
-          )
+              (new Date(order.cancelledAt).getTime() -
+                new Date(order.reserved_at || order.createdAt).getTime()) /
+                60000,
+            )
           : 0,
         refundProcessed: order.paymentStatus === 'REFUNDED',
       };

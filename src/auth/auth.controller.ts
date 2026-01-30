@@ -11,7 +11,7 @@ import { Staff, StaffDocument } from 'src/modules/staff/schemas/staff.schema';
 @ApiTags('auth')
 @Controller('admin/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)

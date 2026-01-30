@@ -12,7 +12,7 @@ export class ExpiredService {
   constructor(
     @InjectModel(ExpiredReservation.name)
     private readonly expiredModel: Model<ExpiredReservationDocument>,
-  ) { }
+  ) {}
 
   async expireBySystem(order: ExpirableOrder, session?: ClientSession, reason?: string) {
     return this.expiredModel.create(

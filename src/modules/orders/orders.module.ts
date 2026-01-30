@@ -11,17 +11,15 @@ import { UsersModule } from '../users/users.module';
 import { CancelledOrdersModule } from '../cancelled-orders/cancelled-orders.module';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: 'Order', schema: OrderSchema },
-        ]),
-        CancelledOrdersModule,
-        forwardRef(() => SurplusPackagesModule), // ✅ FIX
-        forwardRef(() => ReviewsModule),
-        forwardRef(() => ExpiredReservationModule),
-        forwardRef(() => UsersModule),
-    ],
-    providers: [OrdersService],
-    exports: [OrdersService, MongooseModule],
+  imports: [
+    MongooseModule.forFeature([{ name: 'Order', schema: OrderSchema }]),
+    CancelledOrdersModule,
+    forwardRef(() => SurplusPackagesModule), // ✅ FIX
+    forwardRef(() => ReviewsModule),
+    forwardRef(() => ExpiredReservationModule),
+    forwardRef(() => UsersModule),
+  ],
+  providers: [OrdersService],
+  exports: [OrdersService, MongooseModule],
 })
-export class OrdersModule { }
+export class OrdersModule {}

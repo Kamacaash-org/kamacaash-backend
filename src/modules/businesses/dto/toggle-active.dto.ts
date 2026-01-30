@@ -2,7 +2,7 @@ import { IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ToggleActiveDto {
-    @ApiProperty({ example: true })
-    @IsBoolean()
-    isActive: boolean;
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  isActive: boolean;
 }

@@ -15,4 +15,4 @@ import { SurplusCategoriesService } from './surplus-categories.service';
   providers: [SurplusCategoriesService],
   exports: [SurplusCategoriesService],
 })
-export class SurplusCategoriesModule { }
+export class SurplusCategoriesModule {}

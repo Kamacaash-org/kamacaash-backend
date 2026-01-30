@@ -71,13 +71,16 @@ export class CancelledOrder {
   cancellationReason: string;
 }
 
-export const CancelledOrderSchema = new MongooseSchema({
-  orderId: { type: String, required: true, index: true },
-  userId: { type: Types.ObjectId, ref: 'User', required: true, index: true },
-  businessId: { type: Types.ObjectId, ref: 'Business', required: true, index: true },
-  packageId: { type: Types.ObjectId, ref: 'SurplusPackage', required: true, index: true },
-  amount: { type: Number, required: true },
-  quantityCancelled: { type: Number, required: true },
-  cancelledAt: { type: Date, default: Date.now },
-  cancellationReason: { type: String, default: 'Cancelled by user' },
-}, { timestamps: true, versionKey: false });
+export const CancelledOrderSchema = new MongooseSchema(
+  {
+    orderId: { type: String, required: true, index: true },
+    userId: { type: Types.ObjectId, ref: 'User', required: true, index: true },
+    businessId: { type: Types.ObjectId, ref: 'Business', required: true, index: true },
+    packageId: { type: Types.ObjectId, ref: 'SurplusPackage', required: true, index: true },
+    amount: { type: Number, required: true },
+    quantityCancelled: { type: Number, required: true },
+    cancelledAt: { type: Date, default: Date.now },
+    cancellationReason: { type: String, default: 'Cancelled by user' },
+  },
+  { timestamps: true, versionKey: false },
+);

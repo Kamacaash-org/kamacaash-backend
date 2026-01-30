@@ -7,6 +7,8 @@ import { FindOneParams } from 'src/modules/users/dto/find-one-params.dto';
 import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
 import { User } from 'src/modules/users/schemas/user.schema';
 import { UsersService } from 'src/modules/users/users.service';
+import { ApiResponse } from '../../utils/response.util';
+import { MESSAGES } from '../../constants/messages';
 
 // @UseInterceptors(ClassSerializerInterceptor)
 @ApiTags('users')
@@ -21,8 +23,9 @@ export class UsersController {
     description: 'The users were successfully obtained.',
     type: [User],
   })
-  async getAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async getAll(): Promise<ApiResponse<User[]>> {
+    const data = await this.usersService.findAll();
+    return new ApiResponse(200, data, MESSAGES.ADMIN_USER.GET_ALL);
   }
 
   @Get(':userId')
@@ -34,8 +37,9 @@ export class UsersController {
     description: 'The user was successfully obtained.',
     type: User,
   })
-  async getById(@Param() { userId }: FindOneParams): Promise<User> {
-    return this.usersService.findById(userId);
+  async getById(@Param() { userId }: FindOneParams): Promise<ApiResponse<User>> {
+    const data = await this.usersService.findById(userId);
+    return new ApiResponse(200, data, MESSAGES.ADMIN_USER.GET_BY_ID);
   }
 
   @Post()
@@ -44,8 +48,9 @@ export class UsersController {
     description: 'The user has been successfully created.',
     type: User,
   })
-  async create(@Body() user: CreateUserDto): Promise<User> {
-    return this.usersService.create(user);
+  async create(@Body() user: CreateUserDto): Promise<ApiResponse<User>> {
+    const data = await this.usersService.create(user);
+    return new ApiResponse(201, data, MESSAGES.ADMIN_USER.CREATE);
   }
 
   @Patch(':userId')
@@ -59,8 +64,9 @@ export class UsersController {
   async update(
     @Param() { userId }: FindOneParams,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
-    return this.usersService.updateById(userId, updateUserDto);
+  ): Promise<ApiResponse<User>> {
+    const data = await this.usersService.updateById(userId, updateUserDto);
+    return new ApiResponse(200, data, MESSAGES.ADMIN_USER.UPDATE);
   }
 
   @Delete(':userId')
@@ -71,7 +77,8 @@ export class UsersController {
     description: 'The user was successfully deleted.',
     type: DeleteUserResponse,
   })
-  async deleteById(@Param() { userId }: FindOneParams): Promise<DeleteUserResponse> {
-    return this.usersService.remove(userId);
+  async deleteById(@Param() { userId }: FindOneParams): Promise<ApiResponse<DeleteUserResponse>> {
+    const data = await this.usersService.remove(userId);
+    return new ApiResponse(200, data, MESSAGES.ADMIN_USER.DELETE);
   }
 }
