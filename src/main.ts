@@ -7,6 +7,8 @@ import { AppModule } from './app.module';
 import { AppConfig } from './config/app.config';
 import { DatabaseConfig } from './config/database.config';
 import { OpenApiConfig } from './config/open-api.config';
+import { ResponseInterceptor } from './utils/response.util';
+import { AllExceptionsFilter } from './utils/exception.filter';
 config();
 
 async function bootstrap() {
@@ -25,6 +27,8 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
   setupOpenAPI(app);
 
   app.setGlobalPrefix(appConfig.globalPrefix);

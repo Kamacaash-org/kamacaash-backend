@@ -8,11 +8,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { UsersModule } from 'src/modules/users/users.module';
+import { StaffModule } from 'src/modules/staff/staff.module';
+import { BusinessesModule } from 'src/modules/businesses/businesses.module';
 
 @Module({
   imports: [
-    UsersModule,
+    ConfigModule,
+    StaffModule,
+    BusinessesModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

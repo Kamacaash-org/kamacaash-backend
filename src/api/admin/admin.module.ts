@@ -13,22 +13,22 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { OrdersModule } from 'src/modules/orders/orders.module';
 
 @Module({
-    imports: [
-        BusinessesModule,
-        SurplusCategoriesModule,
-        SurplusPackagesModule,
-        StaffModule,
-        UsersModule,
-        OrdersModule,
-    ],
+  imports: [
+    BusinessesModule,
+    SurplusCategoriesModule,
+    SurplusPackagesModule,
+    StaffModule,
+    UsersModule,
+    OrdersModule,
+  ],
 
-    controllers: [
-        BusinessesController,
-        SurplusCategoriesController,
-        SurplusPackagesController,
-        OrdersController,
-        UsersController,
-        StaffController,
-    ],
+  controllers: [
+    BusinessesController,
+    SurplusCategoriesController,
+    SurplusPackagesController,
+    OrdersController,
+    UsersController,
+    StaffController,
+  ],
 })
-export class AdminModule { }
+export class AdminModule {}

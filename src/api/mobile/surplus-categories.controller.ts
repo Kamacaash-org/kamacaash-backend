@@ -3,11 +3,11 @@ import { SurplusCategoriesService } from 'src/modules/surplus-categories/surplus
 
 @Controller('app/surplus-categories')
 export class AppSurplusCategoriesController {
-    constructor(private readonly service: SurplusCategoriesService) { }
+  constructor(private readonly service: SurplusCategoriesService) {}
 
-    @Get()
-    async getsurpluscategories() {
-        const categories = await this.service.findActive();
-        return { success: true, data: { categories } };
-    }
+  @Get()
+  async getsurpluscategories() {
+    const categories = await this.service.findActive();
+    return { success: true, data: { categories } };
+  }
 }

@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  MongooseOptionsFactory,
-  MongooseModuleOptions,
-} from '@nestjs/mongoose';
+import { MongooseOptionsFactory, MongooseModuleOptions } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConfig } from 'src/config/database.config';
@@ -37,8 +34,7 @@ export class DatabaseService implements MongooseOptionsFactory {
   }
 
   createMongooseOptions(): MongooseModuleOptions {
-    const uri = `mongodb${this.srv ? '+srv' : ''}://${this.host}/${this.database
-      }${this.options}`;
+    const uri = `mongodb${this.srv ? '+srv' : ''}://${this.host}/${this.database}${this.options}`;
 
     if (this.env !== 'production' && this.env !== 'testing') {
       mongoose.set('debug', this.debug);

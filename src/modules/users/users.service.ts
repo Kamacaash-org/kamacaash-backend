@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash } from 'bcrypt';
 import { randomUUID } from 'crypto';
@@ -17,7 +22,6 @@ const MAX_FAILED_ATTEMPTS = 3;
 @Injectable()
 export class UsersService {
   constructor(
-
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly userOrdersService: UserOrdersService,
   ) { }
@@ -47,8 +51,7 @@ export class UsersService {
     if (alreadyExists) {
       throw new ConflictException(`User with that email already exists`);
     }
-    const passwordHash = await hash(user.password, 10);
-    const userToCreate = { ...user, userId: randomUUID(), password: passwordHash };
+    const userToCreate = { ...user, userId: randomUUID() };
     return this.userModel.create(userToCreate as any);
   }
 
@@ -64,26 +67,23 @@ export class UsersService {
     return this.userModel.deleteOne({ userId }).lean();
   }
 
-
-
   async findByIdWithProfile(userId: string) {
-    return this.userModel
-      .findById(userId)
-      .select('fullName phoneNumber avatar')
-      .exec();
+    return this.userModel.findById(userId).select('fullName phoneNumber avatar').exec();
   }
-
-
-
 
   //#region APP SERVICES
   async registerUser(phoneNumber: string) {
     if (!phoneNumber) throw new BadRequestException('Phone number is required');
 
-    const lockedUser = await this.userModel.findOne({ phoneNumber, lockedUntil: { $gt: Date.now() } });
+    const lockedUser = await this.userModel.findOne({
+      phoneNumber,
+      lockedUntil: { $gt: Date.now() },
+    });
     if (lockedUser) {
       const remainingTime = Math.ceil((lockedUser.lockedUntil.getTime() - Date.now()) / 60000);
-      throw new BadRequestException(`Account is locked. Please try again in ${remainingTime} minutes`);
+      throw new BadRequestException(
+        `Account is locked. Please try again in ${remainingTime} minutes`,
+      );
     }
 
     let user = await this.userModel.findOne({ phoneNumber }).exec();
@@ -94,12 +94,10 @@ export class UsersService {
     if (!user) {
       // Fill required fields to satisfy existing schema
       const emailFallback = `${phoneNumber.replace(/[^0-9]/g, '')}@mobile.local`;
-      const randomPassword = Math.random().toString(36).slice(2);
       // Use Model.create to avoid deep type instantiation from 'new this.userModel(...)'
       user = await this.userModel.create({
         phoneNumber,
         email: emailFallback,
-        password: randomPassword,
         otp,
         otpExpires,
         failedAttempts: 0,
@@ -125,7 +123,12 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     // Basic verification without lock/attempts for now (can be extended)
-    if (!user.otp || user.otp !== otp || !user.otpExpires || user.otpExpires.getTime() < Date.now()) {
+    if (
+      !user.otp ||
+      user.otp !== otp ||
+      !user.otpExpires ||
+      user.otpExpires.getTime() < Date.now()
+    ) {
       // Increment failed attempts and possibly lock
       user.failedAttempts = (user.failedAttempts || 0) + 1;
       if (user.failedAttempts >= MAX_FAILED_ATTEMPTS) {
@@ -158,7 +161,9 @@ export class UsersService {
 
     if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
       const remainingTime = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
-      throw new BadRequestException(`Account is locked. Please try again in ${remainingTime} minutes`);
+      throw new BadRequestException(
+        `Account is locked. Please try again in ${remainingTime} minutes`,
+      );
     }
 
     if (user.lockedUntil && user.lockedUntil.getTime() <= Date.now()) {
@@ -177,7 +182,9 @@ export class UsersService {
 
   async updateProfile(userId: string, fullName: string) {
     if (!userId || !fullName) throw new BadRequestException('userId and fullName are required');
-    const updated = await this.userModel.findByIdAndUpdate(userId, { fullName }, { new: true }).exec();
+    const updated = await this.userModel
+      .findByIdAndUpdate(userId, { fullName }, { new: true })
+      .exec();
     if (!updated) throw new NotFoundException('User not found');
     return { userId: updated._id, fullName: updated.fullName };
   }
@@ -188,9 +195,6 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     const orders = await this.userOrdersService.getUserOrderSummary(userId);
-
-
-
 
     const totalOrders = orders.length > 0 ? orders[0].totalOrders : 0;
     const totalSavedMoney = orders.length > 0 ? orders[0].totalSavedMoney : 0;

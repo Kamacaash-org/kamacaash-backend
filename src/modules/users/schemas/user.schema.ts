@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
+import { Exclude } from 'class-transformer';
 import { randomUUID } from 'crypto';
 export type UserDocument = User & Document;
 
@@ -24,13 +25,6 @@ export class User {
   })
   @Prop({ required: true, unique: true })
   email: string;
-
-  @ApiProperty({
-    example: 'strongPassword',
-    description: 'The hashed password of the user',
-  })
-  @Prop({ required: true })
-  password: string;
 
   @ApiProperty({
     example: 'John',
@@ -83,6 +77,7 @@ export class User {
     description: 'One-time password for verification',
   })
   @Prop()
+  @Exclude()
   otp: string;
 
   @ApiProperty({
@@ -90,6 +85,7 @@ export class User {
     description: 'OTP expiration timestamp',
   })
   @Prop()
+  @Exclude()
   otpExpires: Date;
 
   @ApiProperty({
@@ -97,6 +93,7 @@ export class User {
     description: 'Number of failed OTP attempts',
   })
   @Prop({ default: 0 })
+  @Exclude()
   failedAttempts: number;
 
   @ApiProperty({
@@ -104,6 +101,7 @@ export class User {
     description: 'Timestamp until which the account is locked',
   })
   @Prop()
+  @Exclude()
   lockedUntil: Date;
 
   // Preferences

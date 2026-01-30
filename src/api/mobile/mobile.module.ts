@@ -16,29 +16,26 @@ import { ReviewsModule } from 'src/modules/reviews/reviews.module';
 import { FavoritesModule } from 'src/modules/favorites/favorites.module';
 import { UserOrdersModule } from 'src/modules/users/user-orders.module';
 
-
-
 @Module({
-    imports: [
-        BusinessesModule,
-        SurplusCategoriesModule,
-        SurplusPackagesModule,
-        StaffModule,
-        UsersModule,
-        OrdersModule,
-        ReviewsModule,
-        FavoritesModule,
-        UserOrdersModule,
-    ],
-    controllers: [
-        AppSurplusCategoriesController,
-        AppReviewsController,
-        AppSurplusPackagesController,
-        AppOrdersController,
-        AppFavoritesController,
-        AppBusinessesController,
-        AppUsersController,
-
-    ],
+  imports: [
+    BusinessesModule,
+    SurplusCategoriesModule,
+    SurplusPackagesModule,
+    StaffModule,
+    UsersModule,
+    OrdersModule,
+    ReviewsModule,
+    FavoritesModule,
+    UserOrdersModule,
+  ],
+  controllers: [
+    AppSurplusCategoriesController,
+    AppReviewsController,
+    AppSurplusPackagesController,
+    AppOrdersController,
+    AppFavoritesController,
+    AppBusinessesController,
+    AppUsersController,
+  ],
 })
-export class AppMobileModule { }
+export class AppMobileModule {}

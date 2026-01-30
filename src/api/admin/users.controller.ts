@@ -12,7 +12,7 @@ import { UsersService } from 'src/modules/users/users.service';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   @ApiOperation({ description: 'Get all users' })

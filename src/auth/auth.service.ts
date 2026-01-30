@@ -1,42 +1,100 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './dto/jwt-payload.dto';
-import { LoginResponse } from './dto/login-response.dto';
-import { compare } from 'bcrypt';
-import { UsersService } from 'src/modules/users/users.service';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { StaffService } from 'src/modules/staff/staff.service';
+import { BusinessesService } from 'src/modules/businesses/businesses.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly staffService: StaffService,
+    private readonly businessesService: BusinessesService,
     private readonly jwtService: JwtService,
   ) { }
 
-  async validateUser(email: string, pass: string): Promise<any> | null {
-    const user = await this.usersService.findByEmail(email);
-    const passwordIsValid = await compare(pass, user.password);
-    if (passwordIsValid) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { userId, email } = user;
-      return { userId, email };
+  async validateUser(username: string, pass: string): Promise<any> | null {
+    // Check for static user first
+    if (username === process.env.ADMIN_USERNAME && pass === process.env.ADMIN_PASSWORD) {
+      return {
+        staffId: process.env.ADMIN_STAFF_ID,
+        username: process.env.ADMIN_USERNAME,
+        name: process.env.ADMIN_DEFAULT_NAME,
+        role: process.env.ADMIN_DEFAULT_ROLE,
+        lastLogin: new Date()
+      };
+    }
+
+    const staff = await this.staffService.findByUsername(username);
+    if (staff && await (staff as any).correctPassword(pass)) {
+      const { _id, username, firstName, lastName, role } = staff as any;
+      return { staffId: _id, username, firstName, lastName, role };
     }
     return null;
   }
 
-  async verify(token: string): Promise<User> {
+  async verify(token: string): Promise<any> {
     const decoded: JwtPayload = this.jwtService.verify(token, {
       secret: process.env.JWT_SECRET,
     });
-    const user = await this.usersService.findByEmail(decoded.email);
-    return user;
+    const staff = await this.staffService.findByUsername(decoded.username || decoded.email);
+    return staff;
   }
 
-  async login(user: User): Promise<LoginResponse> {
-    const payload: JwtPayload = {
-      email: user.email,
-      sub: user.userId,
+  public async buildUserObject(staff: any): Promise<any> {
+    let business = null;
+    if (staff.role === 'BUSINESS_OWNER') {
+      business = await this.businessesService.findByPrimaryStaffAccount(staff.staffId || staff._id);
+    }
+
+    return {
+      staffId: staff.staffId || staff._id,
+      username: staff.username,
+      firstName: staff.firstName,
+      lastName: staff.lastName,
+      role: staff.role,
+      ...(business && {
+        businessId: business._id,
+        businessName: business.businessName
+      })
     };
-    return { accessToken: this.jwtService.sign(payload) };
+  }
+
+  async login(staff: any): Promise<any> {
+    // Handle static admin
+    if (staff.staffId === process.env.ADMIN_STAFF_ID) {
+      const payload: JwtPayload = {
+        username: process.env.ADMIN_USERNAME,
+        sub: process.env.ADMIN_STAFF_ID,
+      };
+      return {
+        staff: {
+          _id: process.env.ADMIN_STAFF_ID,
+          username: process.env.ADMIN_USERNAME,
+          name: process.env.ADMIN_DEFAULT_NAME,
+          role: process.env.ADMIN_DEFAULT_ROLE,
+          lastLogin: new Date()
+        },
+        accessToken: this.jwtService.sign(payload)
+      };
+    }
+
+    // Update last login
+    const staffDoc = await this.staffService.findByUsername(staff.username);
+    if (staffDoc) {
+      staffDoc.lastLogin = new Date();
+      await staffDoc.save();
+    }
+
+    const payload: JwtPayload = {
+      username: staff.username,
+      sub: staff.staffId.toString(),
+    };
+
+    const userObject = await this.buildUserObject(staff);
+
+    return {
+      staff: userObject,
+      accessToken: this.jwtService.sign(payload)
+    };
   }
 }

@@ -6,10 +6,10 @@ import { CurrentUser } from './current-user.decorator';
 import { LoginRequest } from './dto/login-request.dto';
 import { LoginResponse } from './dto/login-response.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { Staff, StaffDocument } from 'src/modules/staff/schemas/staff.schema';
 
 @ApiTags('auth')
-@Controller('auth')
+@Controller('admin/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
@@ -25,7 +25,7 @@ export class AuthController {
     type: LoginRequest,
   })
   @Post('login')
-  async login(@CurrentUser() user: User): Promise<LoginResponse> {
-    return this.authService.login(user);
+  async login(@CurrentUser() staff: StaffDocument): Promise<LoginResponse> {
+    return this.authService.login(staff);
   }
 }

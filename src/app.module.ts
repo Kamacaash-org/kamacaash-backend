@@ -8,6 +8,7 @@ import { DatabaseService } from './database/database.service';
 import { DatabaseModule } from './database/database.module';
 import { AdminModule } from './api/admin/admin.module';
 import { AppMobileModule } from './api/mobile/mobile.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,7 +21,8 @@ import { AppMobileModule } from './api/mobile/mobile.module';
       useFactory: (databaseService: DatabaseService) => databaseService.createMongooseOptions(),
     }),
     AdminModule,
-    AppMobileModule
+    AppMobileModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
