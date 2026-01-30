@@ -21,7 +21,27 @@ export class BusinessResponseDto {
 
   @ApiProperty({ example: '603d2f1e...' })
   @Expose()
-  primaryStaffAccount: string;
+  @Transform(({ obj }) => {
+    if (obj.primaryStaffAccount && typeof obj.primaryStaffAccount === 'object') {
+      // Handle Mongoose populated document
+      if (obj.primaryStaffAccount._doc) {
+        return {
+          _id: obj.primaryStaffAccount._id?.toString(),
+          email: obj.primaryStaffAccount.email,
+          phone: obj.primaryStaffAccount.phone,
+          firstName: obj.primaryStaffAccount.firstName,
+          lastName: obj.primaryStaffAccount.lastName
+        };
+      }
+      // Handle plain object
+      return {
+        ...obj.primaryStaffAccount,
+        _id: obj.primaryStaffAccount._id?.toString()
+      };
+    }
+    return obj.primaryStaffAccount;
+  })
+  primaryStaffAccount: any;
 
   @ApiProperty({ example: '+252' })
   @Expose()
@@ -71,6 +91,27 @@ export class BusinessResponseDto {
   @Expose()
   rejectionReason?: string;
 
+  @ApiProperty()
+  @Expose()
+  @Transform(({ obj }) => obj.address)
+  address?: any;
+
+  @ApiProperty()
+  @Expose()
+  @Transform(({ obj }) => obj.openingHours)
+  openingHours?: any;
+
+
+  @ApiProperty()
+  @Expose()
+  @Transform(({ obj }) => obj.bankAccountDetails)
+  bankAccountDetails?: any;
+
+  @ApiProperty()
+  @Expose()
+  @Transform(({ obj }) => obj.contract)
+  contract?: any;
+
   @ApiProperty({ example: 'en' })
   @Expose()
   defaultLanguage: string;
@@ -82,10 +123,6 @@ export class BusinessResponseDto {
   @ApiProperty({ example: 'Africa/Mogadishu' })
   @Expose()
   timeZone: string;
-
-  @ApiProperty()
-  @Expose()
-  contract?: any;
 
   @ApiProperty({ example: true })
   @Expose()
@@ -102,4 +139,8 @@ export class BusinessResponseDto {
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
   @Expose()
   updatedAt: Date;
+
+  @ApiProperty()
+  @Expose()
+  agreementData?: any;
 }

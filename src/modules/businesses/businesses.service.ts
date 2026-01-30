@@ -4,17 +4,23 @@ import { Model } from 'mongoose';
 import { Business, BusinessDocument } from './schemas/business.schema';
 import { S3Service } from '../../services/s3/s3.service';
 import { Staff } from '../staff/schemas/staff.schema';
+import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '../../config/app.config';
 
 @Injectable()
 export class BusinessesService {
   constructor(
     @InjectModel(Business.name) private businessModel: Model<BusinessDocument>,
     private readonly s3Service: S3Service,
-  ) {}
+    private readonly configService: ConfigService,
+  ) { }
 
   async createOrUpdate(data: any, files: any = {}) {
     // Normalize email
     if (data.email) data.email = data.email.toLowerCase().trim();
+
+    // Get app config for default values
+    const appConfig = this.configService.get<AppConfig>('app');
 
     const isUpdate = !!data._id;
 
@@ -22,6 +28,11 @@ export class BusinessesService {
       const { _id } = data;
       const business = await this.businessModel.findById(_id).exec();
       if (!business) throw new NotFoundException('Business not found');
+
+      // Set default values from config if not provided
+      if (!data.defaultLanguage) data.defaultLanguage = appConfig.business.defaultLanguage;
+      if (!data.currency) data.currency = appConfig.business.currency;
+      if (!data.timeZone) data.timeZone = appConfig.business.timeZone;
 
       // Preserve signed contract
       if (business.contract?.isSigned) {
@@ -101,10 +112,28 @@ export class BusinessesService {
         );
       }
 
-      const updated = await this.businessModel
-        .findByIdAndUpdate(_id, data, { new: true, runValidators: true })
-        .exec();
-      return updated;
+      // Filter out undefined values to avoid overwriting existing data
+      const updateData: any = {};
+      for (const key in data) {
+        if (data[key] !== undefined) {
+          updateData[key] = data[key];
+        }
+      }
+
+      console.log('Data to update:', JSON.stringify(updateData, null, 2));
+
+      // Update the business document directly to handle subdocuments properly
+      for (const key in updateData) {
+        if (key === 'openingHours' && updateData[key]) {
+          business.openingHours = updateData[key];
+          business.markModified('openingHours');
+        } else {
+          business[key] = updateData[key];
+        }
+      }
+      await business.save();
+      console.log('Updated business:', JSON.stringify(business, null, 2));
+      return business;
     }
 
     // CREATE path
@@ -158,7 +187,28 @@ export class BusinessesService {
     }
 
     const created = new this.businessModel(data);
-    return created.save();
+
+    // Skip coordinates during business registration - they will be set during first surplus package upload
+    if (created.address && created.address.coordinates) {
+      created.address.coordinates = undefined;
+    }
+
+    // Set contract with default values
+    created.contract = {
+      commissionRate: appConfig.business.commissionRate,
+      payoutSchedule: 'WEEKLY',
+      isSigned: false,
+    } as any;
+
+    // Set default values from config if not provided
+    if (!created.defaultLanguage) created.defaultLanguage = appConfig.business.defaultLanguage;
+    if (!created.currency) created.currency = appConfig.business.currency;
+    if (!created.timeZone) created.timeZone = appConfig.business.timeZone;
+
+    const savedBusiness = await created.save();
+
+    console.log('Created business:', JSON.stringify(savedBusiness, null, 2));
+    return savedBusiness;
   }
 
   async findAll(query: any = {}) {
@@ -237,6 +287,25 @@ export class BusinessesService {
     business.contract.signedDate = new Date();
 
     await business.save();
+    return business;
+  }
+
+  async updateBusinessCoordinates(businessId: string, coordinates: [number, number]) {
+    const business = await this.businessModel.findById(businessId).exec();
+    if (!business) throw new NotFoundException('Business not found');
+
+    // Only update coordinates if they haven't been set yet (first surplus package)
+    if (!business.address || !business.address.coordinates) {
+      if (!business.address) {
+        business.address = {} as any;
+      }
+      business.address.coordinates = {
+        type: 'Point',
+        coordinates: coordinates
+      };
+      await business.save();
+    }
+
     return business;
   }
 

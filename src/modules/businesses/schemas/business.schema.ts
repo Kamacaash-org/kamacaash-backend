@@ -4,6 +4,7 @@ import { Document, Types, Schema as MongooseSchema } from 'mongoose';
 
 export type BusinessDocument = Business & Document;
 
+@Schema({ _id: false })
 class DayHours {
   @ApiProperty({ example: '09:00', required: false })
   @Prop()
@@ -13,6 +14,7 @@ class DayHours {
   @Prop()
   close: string;
 }
+
 const DayHoursSchema = SchemaFactory.createForClass(DayHours);
 
 @Schema({ _id: false })
@@ -40,16 +42,13 @@ class Address {
   // GeoJSON location
   @ApiProperty({ example: { type: 'Point', coordinates: [45.0, 2.0] } })
   @Prop({
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number] }
   })
-  type?: string;
-
-  @Prop({ type: [Number] })
-  coordinates?: number[];
+  coordinates?: {
+    type: string;
+    coordinates: number[];
+  };
 }
 const AddressSchema = SchemaFactory.createForClass(Address);
 
@@ -92,31 +91,37 @@ class BankAccountDetails {
   accountNumber: string;
 }
 const BankAccountDetailsSchema = SchemaFactory.createForClass(BankAccountDetails);
-
 @Schema({ _id: false })
 class OpeningHours {
   @ApiProperty({ type: DayHours })
-  @Prop({ type: DayHoursSchema, default: {} })
+  @Prop({ type: DayHoursSchema, _id: false })
   mon: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   tue: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   wed: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   thur: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   fri: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   sat: DayHours;
 
-  @Prop({ type: DayHoursSchema, default: {} })
+  @ApiProperty({ type: DayHours })
+  @Prop({ type: DayHoursSchema, _id: false })
   sun: DayHours;
 }
+
 const OpeningHoursSchema = SchemaFactory.createForClass(OpeningHours);
 
 @Schema({ timestamps: true, versionKey: false })
@@ -189,6 +194,23 @@ export class Business {
   @Prop()
   rejectionReason: string;
 
+  @ApiProperty({ type: Address })
+  @Prop({ type: AddressSchema })
+  address: Address;
+
+  @ApiProperty({ type: Contract })
+  @Prop({ type: ContractSchema })
+  contract: Contract;
+
+  @ApiProperty({ type: BankAccountDetails })
+  @Prop({ type: BankAccountDetailsSchema })
+  bankAccountDetails: BankAccountDetails;
+
+  @ApiProperty({ type: OpeningHours })
+  @Prop({ type: OpeningHoursSchema, _id: false })
+  openingHours: OpeningHours;
+
+
   @ApiProperty({ example: 'en' })
   @Prop({ default: 'en' })
   defaultLanguage: string;
@@ -201,21 +223,6 @@ export class Business {
   @Prop({ default: 'Africa/Mogadishu' })
   timeZone: string;
 
-  // @ApiProperty({ type: Contract })
-  // @Prop({ type: ContractSchema })
-  // contract: Contract;
-  @ApiProperty()
-  @Prop({ type: Object })
-  contract: any;
-
-  // @ApiProperty({ type: BankAccountDetails })
-  // @Prop({ type: BankAccountDetailsSchema })
-  // bankAccountDetails: BankAccountDetails;
-
-  // @ApiProperty({ type: OpeningHours })
-  // @Prop({ type: OpeningHoursSchema })
-  // openingHours: OpeningHours;
-
   @ApiProperty({ example: true })
   @Prop({ default: true })
   isActive: boolean;
@@ -225,28 +232,4 @@ export class Business {
   isArchived: boolean;
 }
 
-export const BusinessSchema = new MongooseSchema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    description: String,
-    logo: String,
-    bannerImage: String,
-    licenseDocument: String,
-    businessType: {
-      type: String,
-      enum: ['RESTAURANT', 'GROCERY', 'BAKERY', 'OTHER'],
-      required: true,
-    },
-    phone: String,
-    timeZone: { type: String, default: 'Africa/Mogadishu' },
-    contract: {
-      isSigned: Boolean,
-      signedDate: Date,
-      agreementPdf: String,
-    },
-    isActive: { type: Boolean, default: true },
-    isArchived: { type: Boolean, default: false },
-  },
-  { timestamps: true, versionKey: false },
-);
+export const BusinessSchema = SchemaFactory.createForClass(Business);

@@ -8,6 +8,7 @@ import { User, UserDocument } from '../users/schemas/user.schema';
 import { S3Service } from '../../services/s3/s3.service';
 import { UsersService } from '../users/users.service';
 import { ReviewsService } from '../reviews/reviews.service';
+import { BusinessesService } from '../businesses/businesses.service';
 const calculateDiscount = (originalPrice: number, offerPrice: number) => {
   return originalPrice > 0 ? Math.round(((originalPrice - offerPrice) / originalPrice) * 100) : 0;
 };
@@ -20,9 +21,9 @@ export class SurplusPackagesService {
     @InjectModel(SurplusPackage.name) private surplusModel: Model<SurplusPackageDocument>,
     private readonly usersService: UsersService,
     private readonly reviewsService: ReviewsService,
-
+    private readonly businessesService: BusinessesService,
     private readonly s3Service: S3Service,
-  ) {}
+  ) { }
 
   //#region ADMIN SERVICES
 
@@ -55,7 +56,16 @@ export class SurplusPackagesService {
     }
 
     const created = new this.surplusModel(data);
-    return created.save();
+    const savedPackage = await created.save();
+
+    // Update business coordinates if this is the first surplus package and coordinates aren't set
+    const business = await this.businessesService.findBusinessById(data.businessId);
+    if (business && (!business.address || !business.address.coordinates)) {
+      // Set default coordinates [0, 0] for the business
+      await this.businessesService.updateBusinessCoordinates(data.businessId, [0, 0]);
+    }
+
+    return savedPackage;
   }
 
   async softDelete(id: string) {
@@ -159,7 +169,7 @@ export class SurplusPackagesService {
     const businessReviewRate =
       totalUsersReviewedBusiness > 0
         ? businessReviews.reduce((acc: any, r: any) => acc + r.rating, 0) /
-          totalUsersReviewedBusiness
+        totalUsersReviewedBusiness
         : 0;
 
     const lastThreeReviews = await Promise.all(

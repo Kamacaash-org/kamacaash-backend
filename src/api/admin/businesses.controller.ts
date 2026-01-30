@@ -12,6 +12,7 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  Req,
 } from '@nestjs/common';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -25,10 +26,15 @@ import { BusinessResponseDto } from '../../modules/businesses/dto/business-respo
 import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from '../../utils/response.util';
 import { MESSAGES } from '../../constants/messages';
+import { ConfigService } from '@nestjs/config';
+import * as qs from 'qs';
 
 @Controller('admin/businesses')
 export class BusinessesController {
-  constructor(private readonly service: BusinessesService) {}
+  constructor(
+    private readonly service: BusinessesService,
+    private readonly configService: ConfigService,
+  ) { }
 
   @Get()
   async getAll(@Query() query: QueryBusinessDto): Promise<ApiResponse<BusinessResponseDto[]>> {
@@ -48,12 +54,11 @@ export class BusinessesController {
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(
     AnyFilesInterceptor({ storage: memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } }),
   )
   async createOrUpdate(
-    @Body() body: CreateOrUpdateBusinessDto,
+    @Req() req: any,
     @UploadedFiles() files?: any[],
   ): Promise<ApiResponse<BusinessResponseDto>> {
     try {
@@ -64,11 +69,42 @@ export class BusinessesController {
         filesMap[f.fieldname].push(f);
       });
 
-      const business = await this.service.createOrUpdate(body, filesMap);
-      const data = plainToInstance(BusinessResponseDto, business, {
+      // Parse FormData into proper nested structure using qs
+      const data = qs.parse(req.body);
+
+      // Ensure data is plain objects (not [Object: null prototype])
+      const cleanData = JSON.parse(JSON.stringify(data));
+
+      console.log('Parsed data:', JSON.stringify(cleanData, null, 2));
+
+      const business = await this.service.createOrUpdate(cleanData, filesMap);
+      const responseData = plainToInstance(BusinessResponseDto, business, {
         excludeExtraneousValues: true,
       });
-      return new ApiResponse(201, data, MESSAGES.BUSINESS.CREATE_OR_UPDATE);
+
+      // Add agreement data for PDF generation on frontend
+      if (!data._id) { // Only for new businesses
+        const appConfig = this.configService.get('app');
+        (responseData as any).agreementData = {
+          businessName: business.businessName,
+          ownerName: business.ownerName,
+          email: business.email,
+          phone: `${business.countryCode} ${business.phoneNumber}`,
+          category: business.category,
+          description: business.description,
+          registrationNumber: business.registrationNumber,
+          taxId: business.taxId,
+          commissionRate: appConfig.business.commissionRate,
+          currency: appConfig.business.currency,
+          defaultLanguage: appConfig.business.defaultLanguage,
+          timeZone: appConfig.business.timeZone,
+          payoutSchedule: business.contract.payoutSchedule,
+          agreementReference: business._id,
+          date: new Date().toISOString().split('T')[0]
+        };
+      }
+
+      return new ApiResponse(201, responseData, MESSAGES.BUSINESS.CREATE_OR_UPDATE);
     } catch (err: any) {
       throw new HttpException(err.message || 'Failed', err.status || HttpStatus.BAD_REQUEST);
     }

@@ -66,25 +66,20 @@ export class CreateOrUpdateBusinessDto {
   @IsString()
   licenseDocument?: string;
 
-  @ApiProperty({ example: 'en', required: false })
+  @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  defaultLanguage?: string;
-
-  @ApiProperty({ example: 'USD', required: false })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-
-  @ApiProperty({ example: 'Africa/Mogadishu', required: false })
-  @IsOptional()
-  @IsString()
-  timeZone?: string;
+  @IsObject()
+  address?: any;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsObject()
-  contract?: any;
+  openingHours?: any;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsObject()
+  bankAccountDetails?: any;
 
   @ApiProperty({ example: true, required: false })
   @IsOptional()

@@ -15,6 +15,12 @@ export interface AppConfig {
   timezone: string;
   locale: string;
   debug: boolean;
+  business: {
+    commissionRate: number;
+    currency: string;
+    defaultLanguage: string;
+    timeZone: string;
+  };
 }
 
 export default registerAs(
@@ -32,5 +38,11 @@ export default registerAs(
     timezone: process.env.TZ || 'Africa/Mogadishu',
     locale: process.env.LOCALE || 'so-SO',
     debug: process.env.DEBUG === 'true' || false,
+    business: {
+      commissionRate: 5,
+      currency: 'USD ($)',
+      defaultLanguage: 'English',
+      timeZone: 'Africa/Mogadishu',
+    },
   }),
 );
