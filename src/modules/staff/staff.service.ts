@@ -52,7 +52,6 @@ export class StaffService {
       ...data,
       countryCode: process.env.COUNTRY_CODE || '+252',
       mustChangePassword: true,
-      // password: process.env.DEFAULT_STAFF_USER || 'Kamacaash@123',
     };
 
     const created = new this.staffModel(payload);
@@ -98,11 +97,29 @@ export class StaffService {
     }
 
     staff.password = newPassword; // will be hashed by pre('save')
-    staff.mustChangePassword = false; // ✅ password changed successfully
+    staff.mustChangePassword = false; //  password changed successfully
     await staff.save();
 
-    return { success: true, message: 'Password changed successfully' };
+    return { success: true };
   }
+
+  async getStaffProfile(staffId: string) {
+    const staff = await this.staffModel
+      .findById(staffId)
+      .where({ isActive: true })
+      .lean()
+      .exec();
+
+    if (!staff) {
+      throw new NotFoundException('Staff profile not found');
+    }
+
+    return {
+      ...staff,
+      fullName: `${staff.firstName} ${staff.lastName}`,
+    };
+  }
+
 
 
   async softDelete(id: string) {

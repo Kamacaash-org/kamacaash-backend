@@ -12,6 +12,7 @@ import {
   ValidationPipe,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { StaffService } from '../../modules/staff/staff.service';
 import { CreateStaffDto } from '../../modules/staff/dto/create-staff.dto';
@@ -93,16 +94,45 @@ export class StaffController {
     try {
       const staffId = req.user.sub; // from JWT
 
-      const result = await this.staffService.changePassword(
+      await this.staffService.changePassword(
         staffId,
         dto.currentPassword,
         dto.newPassword,
       );
 
-      return new ApiResponse(200, null, 'Password changed successfully');
+      return new ApiResponse(200, null, MESSAGES.STAFF.CHANGE_PASSWORD);
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to change password',
+        err.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Get('profile/:staffId')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(
+    @Req() req: any,
+    @Param('staffId') staffId: string,
+  ): Promise<ApiResponse<StaffResponseDto>> {
+    try {
+      const requesterId = req.user.sub;
+      const isAdmin = req.user.role === 'SUPER_ADMIN';
+
+      if (!isAdmin && requesterId !== staffId) {
+        throw new ForbiddenException('You are not allowed to view this profile');
+      }
+
+      const staff = await this.staffService.getStaffProfile(staffId);
+
+      const data = plainToInstance(StaffResponseDto, staff, {
+        excludeExtraneousValues: true,
+      });
+
+      return new ApiResponse(200, data, MESSAGES.STAFF.GET_PROFILE);
+    } catch (err: any) {
+      throw new HttpException(
+        err.message || 'Failed to fetch staff profile',
         err.status || HttpStatus.BAD_REQUEST,
       );
     }

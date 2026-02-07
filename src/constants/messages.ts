@@ -4,6 +4,8 @@ export const MESSAGES = {
     CREATE: 'Staff member created successfully',
     UPDATE: 'Staff member updated successfully',
     DELETE: 'Staff member deleted successfully',
+    CHANGE_PASSWORD: 'Password changed successfully',
+    GET_PROFILE: 'Staff profile retrieved successfully',
   },
   BUSINESS: {
     GET_ALL: 'Businesses retrieved successfully',
