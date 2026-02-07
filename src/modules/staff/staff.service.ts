@@ -9,7 +9,7 @@ interface StaffData {
   phone: string;
   firstName: string;
   lastName: string;
-  // password: string;
+  password: string;
   role: string;
   permissions?: string[];
   isAdminApproved?: boolean;
@@ -51,7 +51,8 @@ export class StaffService {
     const payload: any = {
       ...data,
       countryCode: process.env.COUNTRY_CODE || '+252',
-      password: process.env.DEFAULT_STAFF_USER || 'Kamacaash@123',
+      mustChangePassword: true,
+      // password: process.env.DEFAULT_STAFF_USER || 'Kamacaash@123',
     };
 
     const created = new this.staffModel(payload);
@@ -75,6 +76,34 @@ export class StaffService {
       .exec();
     return updated;
   }
+
+  async changePassword(
+    staffId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const staff = await this.staffModel.findById(staffId).exec();
+    if (!staff) throw new NotFoundException('Staff not found');
+
+    // Validate current password
+    const isCorrect = await staff.correctPassword(currentPassword);
+    if (!isCorrect) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Prevent same password
+    const isSame = await staff.correctPassword(newPassword);
+    if (isSame) {
+      throw new BadRequestException('New password must be different from current password');
+    }
+
+    staff.password = newPassword; // will be hashed by pre('save')
+    staff.mustChangePassword = false; // ✅ password changed successfully
+    await staff.save();
+
+    return { success: true, message: 'Password changed successfully' };
+  }
+
 
   async softDelete(id: string) {
     const staff = await this.staffModel.findOne({ _id: id }).exec();

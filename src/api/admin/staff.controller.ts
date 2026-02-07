@@ -10,6 +10,8 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { StaffService } from '../../modules/staff/staff.service';
 import { CreateStaffDto } from '../../modules/staff/dto/create-staff.dto';
@@ -18,10 +20,12 @@ import { StaffResponseDto } from '../../modules/staff/dto/staff-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from '../../utils/response.util';
 import { MESSAGES } from '../../constants/messages';
+import { ChangePasswordDto } from 'src/modules/staff/dto/change-password.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('admin/staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly staffService: StaffService) { }
 
   @Get()
   async getAll(): Promise<ApiResponse<StaffResponseDto[]>> {
@@ -73,6 +77,32 @@ export class StaffController {
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to delete staff',
+        err.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async changePassword(
+    @Req() req: any,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<ApiResponse<any>> {
+    try {
+      const staffId = req.user.sub; // from JWT
+
+      const result = await this.staffService.changePassword(
+        staffId,
+        dto.currentPassword,
+        dto.newPassword,
+      );
+
+      return new ApiResponse(200, null, 'Password changed successfully');
+    } catch (err: any) {
+      throw new HttpException(
+        err.message || 'Failed to change password',
         err.status || HttpStatus.BAD_REQUEST,
       );
     }

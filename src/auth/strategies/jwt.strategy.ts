@@ -22,17 +22,56 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // async validate(payload: JwtPayload): Promise<any> {
+  //   try {
+  //     // Handle static admin user
+  //     if (payload.username === this.configService.get<string>('ADMIN_USERNAME')) {
+  //       this.logger.log(`Admin user authenticated via JWT: ${payload.username}`);
+  //       return {
+  //         _id: payload.sub,
+  //         username: payload.username,
+  //         name: this.configService.get<string>('ADMIN_DEFAULT_NAME'),
+  //         role: this.configService.get<string>('ADMIN_DEFAULT_ROLE') || 'SUPER_ADMIN',
+  //         isAdmin: true,
+  //       };
+  //     }
+
+  //     // Handle regular staff users
+  //     const staff = await this.staffService.findByUsername(payload.username);
+  //     if (!staff) {
+  //       this.logger.warn(`JWT validation failed: staff not found for username ${payload.username}`);
+  //       throw new UnauthorizedException('Invalid token');
+  //     }
+
+  //     if (!staff.isActive) {
+  //       this.logger.warn(`JWT validation failed: staff ${payload.username} is inactive`);
+  //       throw new UnauthorizedException('Account is inactive');
+  //     }
+
+  //     this.logger.log(`JWT validation successful for username: ${payload.username}`);
+
+  //     return await this.authService.buildUserObject(staff);
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `JWT validation error for payload: ${JSON.stringify(payload)}`,
+  //       error.stack,
+  //     );
+  //     throw error;
+  //   }
+  // }
   async validate(payload: JwtPayload): Promise<any> {
     try {
       // Handle static admin user
       if (payload.username === this.configService.get<string>('ADMIN_USERNAME')) {
         this.logger.log(`Admin user authenticated via JWT: ${payload.username}`);
+
         return {
-          _id: payload.sub,
+          sub: payload.sub, // ✅ REQUIRED
           username: payload.username,
           name: this.configService.get<string>('ADMIN_DEFAULT_NAME'),
           role: this.configService.get<string>('ADMIN_DEFAULT_ROLE') || 'SUPER_ADMIN',
           isAdmin: true,
+          mustChangePassword: false, // admin excluded
         };
       }
 
@@ -50,7 +89,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       this.logger.log(`JWT validation successful for username: ${payload.username}`);
 
-      return await this.authService.buildUserObject(staff);
+      const userObject = await this.authService.buildUserObject(staff);
+
+      return {
+        ...userObject,
+        sub: staff._id.toString(),              // ✅ REQUIRED
+        mustChangePassword: staff.mustChangePassword, // ✅ REQUIRED
+      };
     } catch (error) {
       this.logger.error(
         `JWT validation error for payload: ${JSON.stringify(payload)}`,
@@ -59,4 +104,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw error;
     }
   }
+
 }

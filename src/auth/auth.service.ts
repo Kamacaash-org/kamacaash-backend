@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './dto/jwt-payload.dto';
 import { StaffService } from 'src/modules/staff/staff.service';
@@ -10,7 +10,7 @@ export class AuthService {
     private readonly staffService: StaffService,
     private readonly businessesService: BusinessesService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> | null {
     // Check for static user first
@@ -59,6 +59,49 @@ export class AuthService {
     };
   }
 
+  // async login(staff: any): Promise<any> {
+  //   // Handle static admin
+  //   if (staff.staffId === process.env.ADMIN_STAFF_ID) {
+  //     const payload: JwtPayload = {
+  //       username: process.env.ADMIN_USERNAME,
+  //       sub: process.env.ADMIN_STAFF_ID,
+  //     };
+  //     return {
+  //       staff: {
+  //         _id: process.env.ADMIN_STAFF_ID,
+  //         username: process.env.ADMIN_USERNAME,
+  //         name: process.env.ADMIN_DEFAULT_NAME,
+  //         role: process.env.ADMIN_DEFAULT_ROLE,
+  //         mustChangePassword: false, // ✅ static admin excluded
+  //         lastLogin: new Date(),
+  //       },
+  //       accessToken: this.jwtService.sign(payload),
+  //     };
+  //   }
+
+  //   // Update last login
+  //   const staffDoc = await this.staffService.findByUsername(staff.username);
+  //   if (staffDoc) {
+  //     staffDoc.lastLogin = new Date();
+  //     await staffDoc.save();
+  //   }
+
+  //   const payload: JwtPayload = {
+  //     username: staff.username,
+  //     sub: staff.staffId.toString(),
+  //   };
+
+  //   const userObject = await this.buildUserObject(staff);
+
+  //   return {
+  //     staff: {
+  //       ...userObject,
+  //       mustChangePassword: staffDoc.mustChangePassword, // ✅ expose flag
+  //     },
+  //     accessToken: this.jwtService.sign(payload),
+  //   };
+  // }
+
   async login(staff: any): Promise<any> {
     // Handle static admin
     if (staff.staffId === process.env.ADMIN_STAFF_ID) {
@@ -66,35 +109,45 @@ export class AuthService {
         username: process.env.ADMIN_USERNAME,
         sub: process.env.ADMIN_STAFF_ID,
       };
+
       return {
         staff: {
           _id: process.env.ADMIN_STAFF_ID,
           username: process.env.ADMIN_USERNAME,
           name: process.env.ADMIN_DEFAULT_NAME,
           role: process.env.ADMIN_DEFAULT_ROLE,
+          mustChangePassword: false,
           lastLogin: new Date(),
         },
         accessToken: this.jwtService.sign(payload),
       };
     }
 
-    // Update last login
+    // ✅ ALWAYS load full staff from DB
     const staffDoc = await this.staffService.findByUsername(staff.username);
-    if (staffDoc) {
-      staffDoc.lastLogin = new Date();
-      await staffDoc.save();
+    if (!staffDoc) {
+      throw new UnauthorizedException('Staff not found');
     }
 
+    // Update last login
+    staffDoc.lastLogin = new Date();
+    await staffDoc.save();
+
     const payload: JwtPayload = {
-      username: staff.username,
-      sub: staff.staffId.toString(),
+      username: staffDoc.username,
+      sub: staffDoc._id.toString(), // ✅ from DB
+      mustChangePassword: staffDoc.mustChangePassword, // optional but useful
     };
 
-    const userObject = await this.buildUserObject(staff);
+    const userObject = await this.buildUserObject(staffDoc);
 
     return {
-      staff: userObject,
+      staff: {
+        ...userObject,
+        mustChangePassword: staffDoc.mustChangePassword, // ✅ safe
+      },
       accessToken: this.jwtService.sign(payload),
     };
   }
+
 }

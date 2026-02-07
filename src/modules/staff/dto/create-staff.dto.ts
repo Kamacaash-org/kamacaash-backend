@@ -31,9 +31,9 @@ export class CreateStaffDto {
   @IsEnum(['MALE', 'FEMALE'])
   sex: string;
 
-  // @ApiProperty()
-  // @IsString()
-  // password: string;
+  @ApiProperty()
+  @IsString()
+  password: string;
 
   @ApiProperty()
   @IsString()

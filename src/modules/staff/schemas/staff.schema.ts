@@ -49,6 +49,11 @@ export class Staff {
   @Exclude()
   password: string;
 
+  @ApiProperty({ example: true, description: 'Force user to change password on next login' })
+  @Prop({ default: true })
+  mustChangePassword: boolean;
+
+
   @ApiProperty({ example: '123456', description: 'OTP code' })
   @Prop()
   @Exclude()
