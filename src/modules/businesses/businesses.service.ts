@@ -332,8 +332,6 @@ export class BusinessesService {
       .lean()
       .exec();
 
-    console.log('Business lookup result:', business);
-
     return business;
   }
 
