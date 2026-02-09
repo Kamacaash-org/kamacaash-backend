@@ -43,9 +43,10 @@ export class AuthService {
   public async buildUserObject(staff: any): Promise<any> {
     let business = null;
     if (staff.role === 'BUSINESS_OWNER') {
-      business = await this.businessesService.findByPrimaryStaffAccount(staff.staffId || staff._id);
+      // console.log("Finding business for staff:", staff.staffId || staff._id);
+      business = await this.businessesService.findByPrimaryStaffAccount(staff._id.toString());
     }
-
+    // console.log("Building user object for staff:", business);
     return {
       staffId: staff.staffId || staff._id,
       username: staff.username,
@@ -59,48 +60,6 @@ export class AuthService {
     };
   }
 
-  // async login(staff: any): Promise<any> {
-  //   // Handle static admin
-  //   if (staff.staffId === process.env.ADMIN_STAFF_ID) {
-  //     const payload: JwtPayload = {
-  //       username: process.env.ADMIN_USERNAME,
-  //       sub: process.env.ADMIN_STAFF_ID,
-  //     };
-  //     return {
-  //       staff: {
-  //         _id: process.env.ADMIN_STAFF_ID,
-  //         username: process.env.ADMIN_USERNAME,
-  //         name: process.env.ADMIN_DEFAULT_NAME,
-  //         role: process.env.ADMIN_DEFAULT_ROLE,
-  //         mustChangePassword: false, // ✅ static admin excluded
-  //         lastLogin: new Date(),
-  //       },
-  //       accessToken: this.jwtService.sign(payload),
-  //     };
-  //   }
-
-  //   // Update last login
-  //   const staffDoc = await this.staffService.findByUsername(staff.username);
-  //   if (staffDoc) {
-  //     staffDoc.lastLogin = new Date();
-  //     await staffDoc.save();
-  //   }
-
-  //   const payload: JwtPayload = {
-  //     username: staff.username,
-  //     sub: staff.staffId.toString(),
-  //   };
-
-  //   const userObject = await this.buildUserObject(staff);
-
-  //   return {
-  //     staff: {
-  //       ...userObject,
-  //       mustChangePassword: staffDoc.mustChangePassword, // ✅ expose flag
-  //     },
-  //     accessToken: this.jwtService.sign(payload),
-  //   };
-  // }
 
   async login(staff: any): Promise<any> {
     // Handle static admin
@@ -123,7 +82,7 @@ export class AuthService {
       };
     }
 
-    // ✅ ALWAYS load full staff from DB
+    //  ALWAYS load full staff from DB
     const staffDoc = await this.staffService.findByUsername(staff.username);
     if (!staffDoc) {
       throw new UnauthorizedException('Staff not found');
@@ -135,16 +94,16 @@ export class AuthService {
 
     const payload: JwtPayload = {
       username: staffDoc.username,
-      sub: staffDoc._id.toString(), // ✅ from DB
+      sub: staffDoc._id.toString(), //  from DB
       mustChangePassword: staffDoc.mustChangePassword, // optional but useful
     };
 
     const userObject = await this.buildUserObject(staffDoc);
-
+    console.log("Built user object for login:", userObject);
     return {
       staff: {
         ...userObject,
-        mustChangePassword: staffDoc.mustChangePassword, // ✅ safe
+        mustChangePassword: staffDoc.mustChangePassword, //  safe
       },
       accessToken: this.jwtService.sign(payload),
     };
