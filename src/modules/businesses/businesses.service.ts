@@ -336,6 +336,41 @@ export class BusinessesService {
     return business;
   }
 
+  /**
+  * Get business profile by ID
+  * Only return fields safe for staff/business owner
+  */
+  async getBusinessProfile(businessId: string) {
+    if (!Types.ObjectId.isValid(businessId)) {
+      throw new NotFoundException('Invalid business ID');
+    }
+
+    const business = await this.businessModel
+      .findById(businessId)
+      .select([
+        'businessName',
+        'logo',
+        'bannerImage',
+        'description',
+        'phoneNumber',
+        'email',
+        'address',
+        'openingHours',
+      ])
+      .lean()
+      .exec();
+
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    return {
+      ...business,
+      _id: business._id.toString(), // map to string
+    };
+  }
+
+
 
 
   //#endregion

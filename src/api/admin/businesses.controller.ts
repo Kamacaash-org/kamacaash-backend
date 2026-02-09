@@ -169,4 +169,16 @@ export class BusinessesController {
       throw new HttpException(err.message || 'Failed', err.status || HttpStatus.BAD_REQUEST);
     }
   }
+
+
+  @Get('profile/:id')
+  async getBusinessProfile(@Param('id') businessId: string) {
+    const business = await this.service.getBusinessProfile(businessId);
+
+    const data = plainToInstance(BusinessResponseDto, business, {
+      excludeExtraneousValues: true,
+    });
+
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.FETCH_PROFILE);
+  }
 }
