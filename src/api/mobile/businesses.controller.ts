@@ -10,13 +10,13 @@ export class AppBusinessesController {
     @InjectModel('Business') private businessModel: Model<any>,
     @InjectModel('SurplusPackage') private pkgModel: Model<any>,
     @InjectModel('Review') private reviewModel: Model<any>,
-  ) {}
+  ) { }
 
   @Get()
   async getbusinessList(): Promise<ApiResponse<any>> {
     const businesses = await this.businessModel
       .find({})
-      .populate('category', 'name slug')
+      .populate('category', 'name')
       .select('businessName logo category')
       .sort({ createdAt: -1 })
       .exec();
@@ -47,7 +47,7 @@ export class AppBusinessesController {
     const businessReviewRate =
       totalUsersReviewedBusiness > 0
         ? businessReviews.reduce((acc: any, r: any) => acc + r.rating, 0) /
-          totalUsersReviewedBusiness
+        totalUsersReviewedBusiness
         : 0;
 
     const deals = activePackages.map((pkg: any) => ({

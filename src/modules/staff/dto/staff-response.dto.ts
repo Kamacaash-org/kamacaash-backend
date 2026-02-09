@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+import { BusinessDto } from './business.dto';
 
 export class StaffResponseDto {
   @ApiProperty({ example: '603d2f1e...' })
@@ -70,4 +71,13 @@ export class StaffResponseDto {
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
   @Expose()
   updatedAt: Date;
+
+  @ApiProperty({ type: BusinessDto, required: false })
+  @Expose()
+  @Type(() => BusinessDto)
+  business?: BusinessDto;
 }
+
+
+
+

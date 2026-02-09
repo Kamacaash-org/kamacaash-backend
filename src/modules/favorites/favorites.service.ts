@@ -10,7 +10,7 @@ export class FavoritesService {
   constructor(
     @InjectModel(Favorite.name) private favModel: Model<FavoriteDocument>,
     private readonly businessService: BusinessesService,
-  ) {}
+  ) { }
 
   async addFavorite(userId: string, businessId: string, note?: string) {
     if (!userId || !businessId) throw new Error('userId and businessId are required');
@@ -52,7 +52,7 @@ export class FavoritesService {
       .populate({
         path: 'businessId',
         select: 'businessName logo category',
-        populate: { path: 'category', select: 'name slug' },
+        populate: { path: 'category', select: 'name' },
       })
       .exec();
     return { favorites };

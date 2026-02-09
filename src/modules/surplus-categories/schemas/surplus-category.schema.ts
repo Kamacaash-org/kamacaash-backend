@@ -10,9 +10,9 @@ export class SurplusCategory {
   @Prop({ required: true, unique: true, trim: true })
   name: string;
 
-  @ApiProperty({ example: 'electronics', description: 'URL-friendly slug' })
-  @Prop({ unique: true, lowercase: true, trim: true })
-  slug: string;
+  // @ApiProperty({ example: 'electronics', description: 'URL-friendly slug' })
+  // @Prop({ unique: true, lowercase: true, trim: true })
+  // slug: string;
 
   @ApiProperty({ example: 'Surplus electronic items', description: 'Description' })
   @Prop()

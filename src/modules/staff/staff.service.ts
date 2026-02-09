@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { BusinessesService } from '../businesses/businesses.service';
 
 interface StaffData {
   email: string;
@@ -20,7 +21,10 @@ interface StaffData {
 
 @Injectable()
 export class StaffService {
-  constructor(@InjectModel('Staff') private staffModel: Model<any>) { }
+  constructor(
+    @InjectModel('Staff') private staffModel: Model<any>,
+    private readonly businessService: BusinessesService,
+  ) { }
 
   async findAll() {
     const result = await this.staffModel.find().sort({ createdAt: -1 }).lean().exec();
@@ -114,11 +118,26 @@ export class StaffService {
       throw new NotFoundException('Staff profile not found');
     }
 
-    return {
+    const response: any = {
       ...staff,
       fullName: `${staff.firstName} ${staff.lastName}`,
     };
+    // console.log("Staff role:", staff.role, "Staff ID:", staff._id);
+    //  If BUSINESS_OWNER, attach Business info via service
+    if (staff.role === 'BUSINESS_OWNER') {
+      const business = await this.businessService.getBusinessByPrimaryStaff(staff._id.toString());
+      if (business) {
+        response.business = {
+          _id: business._id.toString(),
+          businessName: business.businessName,
+          logo: business.logo,
+        };
+      }
+    }
+
+    return response;
   }
+
 
 
 

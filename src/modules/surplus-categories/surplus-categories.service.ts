@@ -14,7 +14,7 @@ import { UpdateSurplusCategoryDto } from './dto/update-surplus-category.dto';
 export class SurplusCategoriesService {
   constructor(
     @InjectModel(SurplusCategory.name) private categoryModel: Model<SurplusCategoryDocument>,
-  ) {}
+  ) { }
 
   //#region ADMIN SERVICES
   async findAll() {
@@ -89,7 +89,7 @@ export class SurplusCategoriesService {
   async findActive() {
     return this.categoryModel
       .find({ isActive: true })
-      .select('name slug icon')
+      .select('name icon')
       .sort({ sortOrder: 1 })
       .exec();
   }

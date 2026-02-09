@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from './schemas/business.schema';
 import { S3Service } from '../../services/s3/s3.service';
 import { Staff } from '../staff/schemas/staff.schema';
@@ -319,6 +319,24 @@ export class BusinessesService {
       .select('_id businessName')
       .exec();
   }
+
+  async getBusinessByPrimaryStaff(staffId: string) {
+    const business = await this.businessModel
+      .findOne({
+        primaryStaffAccount: staffId,
+        isActive: true,
+        isArchived: false,
+      })
+      .select('businessName logo')
+      .lean()
+      .exec();
+
+    console.log('Business lookup result:', business);
+
+    return business;
+  }
+
+
 
   //#endregion
 }

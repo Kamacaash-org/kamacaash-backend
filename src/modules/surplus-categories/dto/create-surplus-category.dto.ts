@@ -6,10 +6,10 @@ export class CreateSurplusCategoryDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'electronics' })
-  @IsOptional()
-  @IsString()
-  slug?: string;
+  // @ApiProperty({ example: 'electronics' })
+  // @IsOptional()
+  // @IsString()
+  // slug?: string;
 
   @ApiProperty({ example: 'Category description' })
   @IsOptional()
