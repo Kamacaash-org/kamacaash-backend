@@ -13,8 +13,9 @@ import {
   UsePipes,
   ValidationPipe,
   Req,
+  Put,
 } from '@nestjs/common';
-import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { BusinessesService } from '../../modules/businesses/businesses.service';
 import { CreateOrUpdateBusinessDto } from '../../modules/businesses/dto/create-or-update-business.dto';
@@ -28,6 +29,7 @@ import { ApiResponse } from '../../utils/response.util';
 import { MESSAGES } from '../../constants/messages';
 import { ConfigService } from '@nestjs/config';
 import * as qs from 'qs';
+import { EditBusinessSettingsDto } from 'src/modules/businesses/dto/editBusinessSettings.dto';
 
 @Controller('admin/businesses')
 export class BusinessesController {
@@ -180,5 +182,25 @@ export class BusinessesController {
     });
 
     return new ApiResponse(200, data, MESSAGES.BUSINESS.FETCH_PROFILE);
+  }
+
+  @Put('updateProfile/:id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'logo', maxCount: 1 },
+    { name: 'bannerImage', maxCount: 1 },
+    { name: 'licenseDocument', maxCount: 1 },
+  ]))
+  async editBusinessSettings(
+    @Param('id') businessId: string,
+    @Body() payload: EditBusinessSettingsDto,
+    @UploadedFiles() files: { logo?: Express.Multer.File[]; bannerImage?: Express.Multer.File[]; licenseDocument?: Express.Multer.File[] },
+  ): Promise<ApiResponse<BusinessResponseDto>> {
+    const business = await this.service.editBusinessSettings(businessId, payload, files);
+
+    const data = plainToInstance(BusinessResponseDto, business, {
+      excludeExtraneousValues: true,
+    });
+
+    return new ApiResponse(200, data, MESSAGES.BUSINESS.UPDATED_SETTINGS);
   }
 }

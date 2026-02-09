@@ -6,6 +6,7 @@ import { S3Service } from '../../services/s3/s3.service';
 import { Staff } from '../staff/schemas/staff.schema';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '../../config/app.config';
+import { EditBusinessSettingsDto } from './dto/editBusinessSettings.dto';
 
 @Injectable()
 export class BusinessesService {
@@ -371,6 +372,71 @@ export class BusinessesService {
   }
 
 
+  async editBusinessSettings(
+    businessId: string,
+    data: EditBusinessSettingsDto,
+    files?: { logo?: Express.Multer.File[]; bannerImage?: Express.Multer.File[] },
+  ) {
+    if (!Types.ObjectId.isValid(businessId)) throw new NotFoundException('Invalid business ID');
+
+    const business = await this.businessModel.findById(businessId).exec();
+    if (!business) throw new NotFoundException('Business not found');
+
+    // Handle file uploads & remove old
+    if (files?.logo?.length) {
+      if (business.logo) await this.s3Service.deleteUrl(business.logo);
+      business.logo = await this.s3Service.uploadBuffer(
+        files.logo[0].buffer,
+        files.logo[0].originalname,
+        files.logo[0].mimetype,
+        'logos',
+      );
+    }
+
+    if (files?.bannerImage?.length) {
+      if (business.bannerImage) await this.s3Service.deleteUrl(business.bannerImage);
+      business.bannerImage = await this.s3Service.uploadBuffer(
+        files.bannerImage[0].buffer,
+        files.bannerImage[0].originalname,
+        files.bannerImage[0].mimetype,
+        'banners',
+      );
+    }
+
+    // Filter out undefined values
+    const updateData: any = {};
+    for (const key in data) {
+      if (data[key] !== undefined) updateData[key] = data[key];
+    }
+
+    // Update subdocuments properly
+    for (const key in updateData) {
+      if (key === 'openingHours' && updateData[key]) {
+        business.openingHours = updateData[key];
+        business.markModified('openingHours');
+      } else if (key === 'address' && updateData[key]) {
+        business.address = { ...business.address, ...updateData[key] };
+        business.markModified('address');
+      } else {
+        business[key] = updateData[key];
+      }
+    }
+
+    await business.save();
+
+    return {
+      _id: business._id.toString(),
+      businessName: business.businessName,
+      logo: business.logo,
+      bannerImage: business.bannerImage,
+      description: business.description,
+      phoneNumber: business.phoneNumber,
+      email: business.email,
+      address: business.address,
+      openingHours: business.openingHours,
+    };
+
+  }
 
 
   //#endregion

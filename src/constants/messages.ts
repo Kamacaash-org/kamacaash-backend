@@ -17,6 +17,7 @@ export const MESSAGES = {
     REJECT: 'Business rejected successfully',
     SIGN_CONTRACT: 'Contract signed successfully',
     FETCH_PROFILE: 'Business profile retrieved successfully',
+    UPDATED_SETTINGS: 'Business profile updated successfully',
   },
   ADMIN_USER: {
     GET_ALL: 'Users retrieved successfully',
