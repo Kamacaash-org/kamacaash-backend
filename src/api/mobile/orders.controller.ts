@@ -18,13 +18,15 @@ import { MESSAGES } from '../../constants/messages';
 
 @Controller('app/orders')
 export class AppOrdersController {
-  constructor(private readonly service: OrdersService) {}
+  constructor(private readonly service: OrdersService) { }
 
   @Post('reserve')
   @UsePipes(new ValidationPipe({ transform: true }))
   async reserve(@Body() dto: ReserveOrderDto): Promise<ApiResponse<any>> {
     try {
+      // console.log('ReserveOrderDto:', dto);
       const order = await this.service.reserveOrder(dto);
+      // console.log('Reserved Order:', order);
       return new ApiResponse(201, { order }, MESSAGES.MOBILE_ORDER.RESERVE);
     } catch (err: any) {
       throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);

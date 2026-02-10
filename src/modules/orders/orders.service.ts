@@ -23,7 +23,7 @@ export class OrdersService {
     private readonly surplusPackagesService: SurplusPackagesService,
     private readonly reviewsService: ReviewsService,
     private readonly expiredService: ExpiredService,
-  ) {}
+  ) { }
 
   // #region ADMIN SERVICES
 
@@ -225,15 +225,15 @@ export class OrdersService {
     return completedArr.map((order) => {
       const orderAgeMinutes = order.completedAt
         ? Math.floor(
-            (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) / 60000,
-          )
+          (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) / 60000,
+        )
         : 0;
       const completionDuration =
         order.completedAt && order.reserved_at
           ? Math.floor(
-              (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) /
-                60000,
-            )
+            (new Date(order.completedAt).getTime() - new Date(order.reserved_at).getTime()) /
+            60000,
+          )
           : null;
 
       return {
@@ -316,10 +316,10 @@ export class OrdersService {
         },
         orderAgeMinutes: order.cancelledAt
           ? Math.floor(
-              (new Date(order.cancelledAt).getTime() -
-                new Date(order.reserved_at || order.createdAt).getTime()) /
-                60000,
-            )
+            (new Date(order.cancelledAt).getTime() -
+              new Date(order.reserved_at || order.createdAt).getTime()) /
+            60000,
+          )
           : 0,
         refundProcessed: order.paymentStatus === 'REFUNDED',
       };
@@ -334,26 +334,29 @@ export class OrdersService {
   // #region APP SERVICES
 
   async reserveOrder(orderData: any) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+
     try {
+
       const quantity = orderData.quantity || 1;
       const requiredFields = ['userId', 'userPhone', 'packageId', 'quantity'];
+      console.log('Validating required fields:', requiredFields);
       for (const field of requiredFields) {
-        if (!orderData[field]) throw new Error(`Missing required field: ${field}`);
+        if (!orderData[field]) {
+          throw new BadRequestException(`Missing required field: ${field}`);
+        }
       }
-      if (quantity < 1) throw new Error('Quantity must be at least 1');
 
-      const pkg = await this.surplusPackagesService.getPackageForOrder(
+      if (quantity < 1) {
+        throw new BadRequestException('Quantity must be at least 1');
+      }
+
+      // ✅ Let SurplusPackagesService handle stock + save
+      const pkg = await this.surplusPackagesService.reservePackageQuantity(
         orderData.packageId,
-        session,
+        quantity,
       );
 
-      if (!pkg) throw new Error('Package not found');
-      if (pkg.quantityAvailable < quantity) throw new Error('Not enough quantity available');
-
-      pkg.quantityAvailable -= quantity;
-      await pkg.save({ session });
+      console.log('Reserved package:', pkg._id);
 
       const packageSnapshot = {
         title: pkg.title,
@@ -366,7 +369,7 @@ export class OrdersService {
 
       const totalAmount = pkg.offerPrice * quantity;
 
-      const newOrder = await this.orderModel.create(
+      const [newOrder] = await this.orderModel.create(
         [
           {
             userId: orderData.userId,
@@ -380,15 +383,12 @@ export class OrdersService {
             paymentStatus: 'PENDING',
           },
         ],
-        { session },
       );
 
-      await session.commitTransaction();
-      session.endSession();
-      return newOrder[0];
+
+      return newOrder;
+
     } catch (err) {
-      await session.abortTransaction();
-      session.endSession();
       throw err;
     }
   }

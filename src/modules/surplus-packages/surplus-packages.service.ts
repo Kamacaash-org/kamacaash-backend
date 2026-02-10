@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, ObjectId, Types } from 'mongoose';
 import { SurplusPackage, SurplusPackageDocument } from './schemas/surplus-package.schema';
@@ -93,6 +93,32 @@ export class SurplusPackagesService {
       .select('title businessId originalPrice offerPrice pickupStart pickupEnd quantityAvailable')
       .lean();
   }
+
+
+  async reservePackageQuantity(
+    packageId: string,
+    quantity: number,
+  ) {
+    const pkg = await this.surplusModel
+      .findById(packageId)
+      .exec();
+    console.log('Reserving package:', { packageId, quantity, pkg });
+
+    if (!pkg) {
+      throw new NotFoundException('Package not found');
+    }
+
+    if (pkg.quantityAvailable < quantity) {
+      throw new BadRequestException('Not enough quantity available');
+    }
+
+    pkg.quantityAvailable -= quantity;
+
+    await pkg.save();
+
+    return pkg;
+  }
+
 
   // surplus-packages.service.ts
   async findByIdForOrder(packageId: Types.ObjectId, session?: ClientSession) {

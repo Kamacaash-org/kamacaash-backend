@@ -9,9 +9,9 @@ import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from '../../utils/response.util';
 import { MESSAGES } from '../../constants/messages';
 
-@Controller('admin/app-users')
+@Controller('app/app-users')
 export class AppUsersController {
-  constructor(private readonly service: UsersService) {}
+  constructor(private readonly service: UsersService) { }
 
   @Post('register')
   @UsePipes(new ValidationPipe({ transform: true }))
