@@ -109,6 +109,10 @@ export class ReviewTopRequestsService {
           'createdAt',
           'updatedAt',
         ].join(' '),
+        populate: {
+          path: 'userId',
+          select: ['fullName', 'name', 'surname'].join(' '),
+        },
       })
       .populate({
         path: 'businessId',
@@ -123,16 +127,21 @@ export class ReviewTopRequestsService {
     const obj = doc?.toObject ? doc.toObject() : doc;
     if (!obj) return obj;
     const normalizedReviews = Array.isArray(obj.reviewIds)
-      ? obj.reviewIds.map((r: any) =>
-        r && typeof r === 'object'
-          ? {
-            ...r,
-            _id: r._id?.toString?.() || r._id,
-            userId: r.userId?.toString?.() || r.userId,
-            businessId: r.businessId?.toString?.() || r.businessId,
-          }
-          : r,
-      )
+      ? obj.reviewIds.map((r: any) => {
+        if (!r || typeof r !== 'object') return r;
+        const userObj = r.userId && typeof r.userId === 'object' ? r.userId : null;
+        const fullName =
+          userObj?.fullName ||
+          [userObj?.name, userObj?.surname].filter(Boolean).join(' ') ||
+          '';
+        return {
+          ...r,
+          _id: r._id?.toString?.() || r._id,
+          userId: userObj?._id?.toString?.() || r.userId?.toString?.() || r.userId,
+          businessId: r.businessId?.toString?.() || r.businessId,
+          reviewerName: fullName && fullName.trim().length > 0 ? fullName : 'Kamacaashuser',
+        };
+      })
       : obj.reviewIds;
 
     return {

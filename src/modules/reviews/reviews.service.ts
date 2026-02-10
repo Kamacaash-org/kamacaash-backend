@@ -64,6 +64,7 @@ export class ReviewsService {
     const reviews = await this.reviewModel
       .find({ businessId })
       .sort({ createdAt: -1 })
+      .populate({ path: 'userId', select: ['name', 'surname', 'fullName'].join(' ') })
       .lean()
       .exec();
     return (reviews as any[]).map((r) => this.normalizeReview(r));
@@ -112,11 +113,17 @@ export class ReviewsService {
   private normalizeReview(doc: any) {
     const obj = doc?.toObject ? doc.toObject() : doc;
     if (!obj) return obj;
+    const userObj = obj.userId && typeof obj.userId === 'object' ? obj.userId : null;
+    const fullName =
+      userObj?.fullName ||
+      [userObj?.name, userObj?.surname].filter(Boolean).join(' ') ||
+      '';
     return {
       ...obj,
       _id: obj._id?.toString?.() || obj._id,
-      userId: obj.userId?.toString?.() || obj.userId,
+      userId: userObj?._id?.toString?.() || obj.userId?.toString?.() || obj.userId,
       businessId: obj.businessId?.toString?.() || obj.businessId,
+      reviewerName: fullName && fullName.trim().length > 0 ? fullName : 'Kamacaasshuser',
     };
   }
 }
