@@ -1,5 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewTopRequestStatus } from '../schemas/review-top-request.schema';
+import { ReviewResponseDto } from './review-response.dto';
+
+export class ReviewTopRequestBusinessDto {
+  @ApiProperty({ example: '603d2f1e...' })
+  _id: string;
+
+  @ApiProperty({ example: 'My Business' })
+  businessName: string;
+
+  @ApiProperty({ example: 'https://example.com/logo.png' })
+  logo: string;
+}
 
 export class ReviewTopRequestResponseDto {
   @ApiProperty({ example: '603d2f1e...' })
@@ -8,11 +20,14 @@ export class ReviewTopRequestResponseDto {
   @ApiProperty({ example: '603d2f1e...', description: 'Business ObjectId' })
   businessId: string;
 
+  @ApiProperty({ type: ReviewTopRequestBusinessDto })
+  business?: ReviewTopRequestBusinessDto;
+
   @ApiProperty({ example: '603d2f1e...', description: 'Requesting staff ObjectId' })
   requestedBy: string;
 
-  @ApiProperty({ example: ['603d2f1e...', '603d2f2a...', '603d2f3b...'] })
-  reviewIds: string[];
+  @ApiProperty({ type: [ReviewResponseDto] })
+  reviewIds: ReviewResponseDto[];
 
   @ApiProperty({ enum: ReviewTopRequestStatus })
   status: ReviewTopRequestStatus;

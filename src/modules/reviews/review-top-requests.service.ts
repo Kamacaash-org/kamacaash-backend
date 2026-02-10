@@ -94,6 +94,26 @@ export class ReviewTopRequestsService {
     const requests = await this.reviewTopRequestModel
       .find({ status: ReviewTopRequestStatus.PENDING })
       .sort({ createdAt: -1 })
+      .populate({
+        path: 'reviewIds',
+        select: [
+          'userId',
+          'businessId',
+          'rating',
+          'comment',
+          'no_of_likes',
+          'no_of_dis_likes',
+          'isVisible',
+          'isFeatured',
+          'featuredAt',
+          'createdAt',
+          'updatedAt',
+        ].join(' '),
+      })
+      .populate({
+        path: 'businessId',
+        select: ['businessName', 'logo'].join(' '),
+      })
       .lean()
       .exec();
     return (requests as any[]).map((r) => this.normalize(r));
@@ -102,14 +122,36 @@ export class ReviewTopRequestsService {
   private normalize(doc: any) {
     const obj = doc?.toObject ? doc.toObject() : doc;
     if (!obj) return obj;
+    const normalizedReviews = Array.isArray(obj.reviewIds)
+      ? obj.reviewIds.map((r: any) =>
+        r && typeof r === 'object'
+          ? {
+            ...r,
+            _id: r._id?.toString?.() || r._id,
+            userId: r.userId?.toString?.() || r.userId,
+            businessId: r.businessId?.toString?.() || r.businessId,
+          }
+          : r,
+      )
+      : obj.reviewIds;
+
     return {
       ...obj,
       _id: obj._id?.toString?.() || obj._id,
-      businessId: obj.businessId?.toString?.() || obj.businessId,
+      businessId:
+        typeof obj.businessId === 'object'
+          ? obj.businessId?._id?.toString?.() || obj.businessId?._id
+          : obj.businessId?.toString?.() || obj.businessId,
+      business:
+        typeof obj.businessId === 'object'
+          ? {
+            _id: obj.businessId?._id?.toString?.() || obj.businessId?._id,
+            businessName: obj.businessId?.businessName,
+            logo: obj.businessId?.logo,
+          }
+          : undefined,
       requestedBy: obj.requestedBy?.toString?.() || obj.requestedBy,
-      reviewIds: Array.isArray(obj.reviewIds)
-        ? obj.reviewIds.map((id: any) => id?.toString?.() || id)
-        : obj.reviewIds,
+      reviewIds: normalizedReviews,
       reviewedBy: obj.reviewedBy?.toString?.() || obj.reviewedBy,
     };
   }
