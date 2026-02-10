@@ -118,6 +118,10 @@ export class ReviewTopRequestsService {
         path: 'businessId',
         select: ['businessName', 'logo'].join(' '),
       })
+      .populate({
+        path: 'requestedBy',
+        select: ['firstName', 'lastName', 'countryCode', 'phone'].join(' '),
+      })
       .lean()
       .exec();
     return (requests as any[]).map((r) => this.normalize(r));
@@ -159,7 +163,21 @@ export class ReviewTopRequestsService {
             logo: obj.businessId?.logo,
           }
           : undefined,
-      requestedBy: obj.requestedBy?.toString?.() || obj.requestedBy,
+      requestedBy:
+        typeof obj.requestedBy === 'object'
+          ? obj.requestedBy?._id?.toString?.() || obj.requestedBy?._id
+          : obj.requestedBy?.toString?.() || obj.requestedBy,
+      requestedByStaff:
+        typeof obj.requestedBy === 'object'
+          ? {
+            _id: obj.requestedBy?._id?.toString?.() || obj.requestedBy?._id,
+            fullName: [obj.requestedBy?.firstName, obj.requestedBy?.lastName]
+              .filter(Boolean)
+              .join(' '),
+            countryCode: obj.requestedBy?.countryCode,
+            phone: obj.requestedBy?.phone,
+          }
+          : undefined,
       reviewIds: normalizedReviews,
       reviewedBy: obj.reviewedBy?.toString?.() || obj.reviewedBy,
     };

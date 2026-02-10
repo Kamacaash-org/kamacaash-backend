@@ -13,6 +13,20 @@ export class ReviewTopRequestBusinessDto {
   logo: string;
 }
 
+export class ReviewTopRequestStaffDto {
+  @ApiProperty({ example: '603d2f1e...' })
+  _id: string;
+
+  @ApiProperty({ example: 'John Doe' })
+  fullName: string;
+
+  @ApiProperty({ example: '+1' })
+  countryCode: string;
+
+  @ApiProperty({ example: '123456789' })
+  phone: string;
+}
+
 export class ReviewTopRequestResponseDto {
   @ApiProperty({ example: '603d2f1e...' })
   _id: string;
@@ -25,6 +39,9 @@ export class ReviewTopRequestResponseDto {
 
   @ApiProperty({ example: '603d2f1e...', description: 'Requesting staff ObjectId' })
   requestedBy: string;
+
+  @ApiProperty({ type: ReviewTopRequestStaffDto })
+  requestedByStaff?: ReviewTopRequestStaffDto;
 
   @ApiProperty({ type: [ReviewResponseDto] })
   reviewIds: ReviewResponseDto[];
