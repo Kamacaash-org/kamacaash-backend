@@ -6,6 +6,7 @@ import { BusinessesService } from '../businesses/businesses.service';
 import { ReviewTopRequestsService } from './review-top-requests.service';
 import { CreateTopReviewsRequestDto } from './dto/create-top-reviews-request.dto';
 import { RejectTopReviewsRequestDto } from './dto/reject-top-reviews-request.dto';
+import { ReviewTopRequestStatus } from './schemas/review-top-request.schema';
 
 @Injectable()
 export class ReviewsService {
@@ -108,6 +109,10 @@ export class ReviewsService {
 
   async listPendingTopReviewRequests() {
     return this.reviewTopRequestsService.listPending();
+  }
+
+  async listTopReviewRequestsByStatus(status: ReviewTopRequestStatus) {
+    return this.reviewTopRequestsService.listByStatus(status);
   }
 
   private normalizeReview(doc: any) {

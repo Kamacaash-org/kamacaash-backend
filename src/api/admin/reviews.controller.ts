@@ -27,6 +27,8 @@ import {
 } from 'src/modules/reviews/dto/review-params.dto';
 import { BusinessReviewsResponseDto } from 'src/modules/reviews/dto/business-reviews-response.dto';
 import { ReviewResponseDto } from 'src/modules/reviews/dto/review-response.dto';
+import { ReviewTopRequestStatusParamDto } from 'src/modules/reviews/dto/review-status-param.dto';
+import { ReviewTopRequestStatus } from 'src/modules/reviews/schemas/review-top-request.schema';
 
 @Controller('admin/reviews')
 export class AdminReviewsController {
@@ -144,6 +146,23 @@ export class AdminReviewsController {
         excludeExtraneousValues: false,
       });
       return new ApiResponse(200, data, 'Pending top review requests retrieved successfully');
+    } catch (err: any) {
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('top-requests/status/:status')
+  @UseGuards(JwtAuthGuard)
+  async listTopReviewRequestsByStatus(
+    @Param() params: ReviewTopRequestStatusParamDto,
+  ): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
+    try {
+      const status = params.status as ReviewTopRequestStatus;
+      const result = await this.reviewsService.listTopReviewRequestsByStatus(status);
+      const data = plainToInstance(ReviewTopRequestResponseDto, result, {
+        excludeExtraneousValues: false,
+      });
+      return new ApiResponse(200, data, 'Top review requests retrieved successfully');
     } catch (err: any) {
       throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }

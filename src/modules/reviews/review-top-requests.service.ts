@@ -60,9 +60,9 @@ export class ReviewTopRequestsService {
       _id: { $in: request.reviewIds },
       businessId: request.businessId,
     });
-    if (reviewsCount !== 3) {
-      throw new BadRequestException('Requested reviews are invalid for this business');
-    }
+    // if (reviewsCount !== 3) {
+    //   throw new BadRequestException('Requested reviews are invalid for this business');
+    // }
 
     request.status = ReviewTopRequestStatus.APPROVED;
     request.reviewedBy = reviewedBy as any;
@@ -93,6 +93,43 @@ export class ReviewTopRequestsService {
   async listPending() {
     const requests = await this.reviewTopRequestModel
       .find({ status: ReviewTopRequestStatus.PENDING })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'reviewIds',
+        select: [
+          'userId',
+          'businessId',
+          'rating',
+          'comment',
+          'no_of_likes',
+          'no_of_dis_likes',
+          'isVisible',
+          'isFeatured',
+          'featuredAt',
+          'createdAt',
+          'updatedAt',
+        ].join(' '),
+        populate: {
+          path: 'userId',
+          select: ['fullName', 'name', 'surname'].join(' '),
+        },
+      })
+      .populate({
+        path: 'businessId',
+        select: ['businessName', 'logo'].join(' '),
+      })
+      .populate({
+        path: 'requestedBy',
+        select: ['firstName', 'lastName', 'countryCode', 'phone'].join(' '),
+      })
+      .lean()
+      .exec();
+    return (requests as any[]).map((r) => this.normalize(r));
+  }
+
+  async listByStatus(status: ReviewTopRequestStatus) {
+    const requests = await this.reviewTopRequestModel
+      .find({ status })
       .sort({ createdAt: -1 })
       .populate({
         path: 'reviewIds',
