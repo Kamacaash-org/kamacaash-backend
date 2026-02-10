@@ -107,7 +107,9 @@ StaffSchema.virtual('fullName').get(function (this: any) {
 // Hash password before saving (only if modified)
 StaffSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  this.password = await bcrypt.hash(this.password, 12);
+  const rounds = Number(process.env.BCRYPT_ROUNDS || 10); // production default 10
+
+  this.password = await bcrypt.hash(this.password, rounds);
 });
 
 // Instance method to validate password
