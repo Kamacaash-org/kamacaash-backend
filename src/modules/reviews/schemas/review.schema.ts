@@ -42,13 +42,18 @@ export class Review {
   @Prop({ type: Number, default: 0 })
   no_of_dis_likes: number;
 
-  // @ApiProperty({ type: ReviewResponse, description: 'Business response' })
-  // @Prop({ type: ReviewResponseSchema, default: null })
-  // response: ReviewResponse | null;
 
   @ApiProperty({ example: true, description: 'Visibility flag' })
   @Prop({ default: true })
   isVisible: boolean;
+
+  @ApiProperty({ example: false, description: 'Featured in top reviews' })
+  @Prop({ default: false, index: true })
+  isFeatured: boolean;
+
+  @ApiProperty({ example: '2026-01-21T12:00:00.000Z', description: 'Featured timestamp' })
+  @Prop()
+  featuredAt: Date;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

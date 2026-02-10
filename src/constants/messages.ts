@@ -18,6 +18,7 @@ export const MESSAGES = {
     SIGN_CONTRACT: 'Contract signed successfully',
     FETCH_PROFILE: 'Business profile retrieved successfully',
     UPDATED_SETTINGS: 'Business profile updated successfully',
+
   },
   ADMIN_USER: {
     GET_ALL: 'Users retrieved successfully',
@@ -61,6 +62,10 @@ export const MESSAGES = {
   },
   REVIEW: {
     CREATE: 'Review created successfully',
+    TOP_REQUEST_CREATE: 'Top reviews request created successfully',
+    TOP_REQUEST_APPROVE: 'Top reviews request approved successfully',
+    TOP_REQUEST_REJECT: 'Top reviews request rejected successfully',
+    BUSINESS_REVIEWS: 'Business reviews retrieved successfully',
   },
   USER: {
     REGISTER: 'User registered successfully',

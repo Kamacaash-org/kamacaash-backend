@@ -2,15 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { Review, ReviewDocument } from './schemas/review.schema';
-import { Business, BusinessDocument } from '../businesses/schemas/business.schema';
 import { BusinessesService } from '../businesses/businesses.service';
+import { ReviewTopRequestsService } from './review-top-requests.service';
+import { CreateTopReviewsRequestDto } from './dto/create-top-reviews-request.dto';
+import { RejectTopReviewsRequestDto } from './dto/reject-top-reviews-request.dto';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
     private readonly businessService: BusinessesService,
-  ) {}
+    private readonly reviewTopRequestsService: ReviewTopRequestsService,
+  ) { }
 
   async reviewBusiness(payload: {
     userId: string;
@@ -57,7 +60,7 @@ export class ReviewsService {
       .exec();
   }
 
-  async getBusinessReviews(businessId: Types.ObjectId) {
+  async getBusinessReviews(businessId: string | Types.ObjectId) {
     return this.reviewModel.find({ businessId }).sort({ createdAt: -1 }).exec();
   }
 
@@ -68,5 +71,32 @@ export class ReviewsService {
 
   async getReviewedBusinessIdsByUser(userId: string) {
     return this.reviewModel.find({ userId }).distinct('businessId').exec();
+  }
+
+  async createTopReviewsRequest(dto: CreateTopReviewsRequestDto, requestedBy: string) {
+    return this.reviewTopRequestsService.create(dto, requestedBy);
+  }
+
+  async approveTopReviewsRequest(requestId: string, reviewedBy: string) {
+    const request = await this.reviewTopRequestsService.approve(requestId, reviewedBy);
+
+    await this.reviewModel.updateMany(
+      { businessId: request.businessId },
+      { $set: { isFeatured: false, featuredAt: null } },
+    );
+    await this.reviewModel.updateMany(
+      { _id: { $in: request.reviewIds } },
+      { $set: { isFeatured: true, featuredAt: new Date() } },
+    );
+
+    return request;
+  }
+
+  async rejectTopReviewsRequest(
+    requestId: string,
+    reviewedBy: string,
+    dto: RejectTopReviewsRequestDto,
+  ) {
+    return this.reviewTopRequestsService.reject(requestId, reviewedBy, dto);
   }
 }
