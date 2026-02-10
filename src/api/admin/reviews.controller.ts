@@ -136,11 +136,13 @@ export class AdminReviewsController {
 
   @Get('top-requests/pending')
   @UseGuards(JwtAuthGuard)
-  async listPendingTopReviewRequests(): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
+  async listPendingTopReviewRequests(
+    @Req() req: any,
+  ): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
     try {
-      //    if (req.user.role === 'BUSINESS_OWNER') {
-      //   throw new ForbiddenException('Only admin staff can list pending top review requests');
-      // }
+      if (req.user.role !== 'SUPER_ADMIN') {
+        throw new ForbiddenException('Only SUPER_ADMIN can list pending top review requests');
+      }
       const result = await this.reviewsService.listPendingTopReviewRequests();
       const data = plainToInstance(ReviewTopRequestResponseDto, result, {
         excludeExtraneousValues: false,
@@ -154,9 +156,13 @@ export class AdminReviewsController {
   @Get('top-requests/status/:status')
   @UseGuards(JwtAuthGuard)
   async listTopReviewRequestsByStatus(
+    @Req() req: any,
     @Param() params: ReviewTopRequestStatusParamDto,
   ): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
     try {
+      if (req.user.role !== 'SUPER_ADMIN') {
+        throw new ForbiddenException('Only SUPER_ADMIN can list top review requests');
+      }
       const status = params.status as ReviewTopRequestStatus;
       const result = await this.reviewsService.listTopReviewRequestsByStatus(status);
       const data = plainToInstance(ReviewTopRequestResponseDto, result, {
