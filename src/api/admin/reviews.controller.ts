@@ -161,7 +161,7 @@ export class AdminReviewsController {
   ): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
     try {
       if (req.user.role !== 'SUPER_ADMIN') {
-        throw new ForbiddenException('Only SUPER_ADMIN can list top review requests');
+        throw new ForbiddenException('Only Admins can list top review requests');
       }
       const status = params.status as ReviewTopRequestStatus;
       const result = await this.reviewsService.listTopReviewRequestsByStatus(status);
