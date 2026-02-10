@@ -131,4 +131,21 @@ export class AdminReviewsController {
       throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Get('top-requests/pending')
+  @UseGuards(JwtAuthGuard)
+  async listPendingTopReviewRequests(): Promise<ApiResponse<ReviewTopRequestResponseDto[]>> {
+    try {
+      //    if (req.user.role === 'BUSINESS_OWNER') {
+      //   throw new ForbiddenException('Only admin staff can list pending top review requests');
+      // }
+      const result = await this.reviewsService.listPendingTopReviewRequests();
+      const data = plainToInstance(ReviewTopRequestResponseDto, result, {
+        excludeExtraneousValues: false,
+      });
+      return new ApiResponse(200, data, 'Pending top review requests retrieved successfully');
+    } catch (err: any) {
+      throw new HttpException(err.message || 'Error', HttpStatus.BAD_REQUEST);
+    }
+  }
 }

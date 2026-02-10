@@ -90,6 +90,15 @@ export class ReviewTopRequestsService {
     return this.normalize(request);
   }
 
+  async listPending() {
+    const requests = await this.reviewTopRequestModel
+      .find({ status: ReviewTopRequestStatus.PENDING })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+    return (requests as any[]).map((r) => this.normalize(r));
+  }
+
   private normalize(doc: any) {
     const obj = doc?.toObject ? doc.toObject() : doc;
     if (!obj) return obj;

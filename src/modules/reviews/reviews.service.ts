@@ -42,7 +42,7 @@ export class ReviewsService {
     }
 
     await review.save();
-    return { review, action };
+    return { review: this.normalizeReview(review), action };
   }
 
   async getBusinessRatingAggregation(businessId: string) {
@@ -61,7 +61,12 @@ export class ReviewsService {
   }
 
   async getBusinessReviews(businessId: string | Types.ObjectId) {
-    return this.reviewModel.find({ businessId }).sort({ createdAt: -1 }).exec();
+    const reviews = await this.reviewModel
+      .find({ businessId })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+    return (reviews as any[]).map((r) => this.normalizeReview(r));
   }
 
   // reviews.service.ts
@@ -98,5 +103,20 @@ export class ReviewsService {
     dto: RejectTopReviewsRequestDto,
   ) {
     return this.reviewTopRequestsService.reject(requestId, reviewedBy, dto);
+  }
+
+  async listPendingTopReviewRequests() {
+    return this.reviewTopRequestsService.listPending();
+  }
+
+  private normalizeReview(doc: any) {
+    const obj = doc?.toObject ? doc.toObject() : doc;
+    if (!obj) return obj;
+    return {
+      ...obj,
+      _id: obj._id?.toString?.() || obj._id,
+      userId: obj.userId?.toString?.() || obj.userId,
+      businessId: obj.businessId?.toString?.() || obj.businessId,
+    };
   }
 }
