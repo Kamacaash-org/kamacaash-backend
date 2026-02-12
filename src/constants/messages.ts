@@ -67,6 +67,9 @@ export const MESSAGES = {
     TOP_REQUEST_REJECT: 'Top reviews request rejected successfully',
     BUSINESS_REVIEWS: 'Business reviews retrieved successfully',
   },
+  DASHBOARD: {
+    GET_OVERVIEW: 'Dashboard overview retrieved successfully',
+  },
   USER: {
     REGISTER: 'User registered successfully',
     VERIFY_OTP: 'OTP verified successfully',

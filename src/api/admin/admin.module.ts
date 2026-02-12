@@ -6,6 +6,7 @@ import { OrdersController } from './orders.controller';
 import { UsersController } from './users.controller';
 import { StaffController } from './staff.controller';
 import { AdminReviewsController } from './reviews.controller';
+import { DashboardController } from './dashboard.controller';
 import { BusinessesModule } from 'src/modules/businesses/businesses.module';
 import { SurplusCategoriesModule } from 'src/modules/surplus-categories/surplus-categories.module';
 import { SurplusPackagesModule } from 'src/modules/surplus-packages/surplus-packages.module';
@@ -13,6 +14,7 @@ import { StaffModule } from 'src/modules/staff/staff.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { OrdersModule } from 'src/modules/orders/orders.module';
 import { ReviewsModule } from 'src/modules/reviews/reviews.module';
+import { DashboardService } from 'src/modules/dashboard/dashboard.service';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ReviewsModule } from 'src/modules/reviews/reviews.module';
     UsersController,
     StaffController,
     AdminReviewsController,
+    DashboardController,
   ],
+  providers: [DashboardService],
 })
 export class AdminModule {}

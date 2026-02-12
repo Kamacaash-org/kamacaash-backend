@@ -99,7 +99,7 @@ export class AuthService {
     };
 
     const userObject = await this.buildUserObject(staffDoc);
-    console.log("Built user object for login:", userObject);
+    // console.log("Built user object for login:", userObject);
     return {
       staff: {
         ...userObject,
