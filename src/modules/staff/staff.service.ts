@@ -149,4 +149,14 @@ export class StaffService {
     await staff.save();
     return { success: true };
   }
+
+  async toggleTwoFactor(id: string, enabled: boolean) {
+    const staff = await this.staffModel.findByIdAndUpdate(
+      id,
+      { twoFactorEnabled: enabled },
+      { new: true }
+    ).exec();
+    if (!staff) throw new NotFoundException('Staff not found');
+    return staff;
+  }
 }

@@ -13,6 +13,7 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  Patch,
 } from '@nestjs/common';
 import { StaffService } from '../../modules/staff/staff.service';
 import { CreateStaffDto } from '../../modules/staff/dto/create-staff.dto';
@@ -133,6 +134,28 @@ export class StaffController {
     } catch (err: any) {
       throw new HttpException(
         err.message || 'Failed to fetch staff profile',
+        err.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Patch('toggle-2fa')
+  @UseGuards(JwtAuthGuard)
+  async toggleTwoFactor(
+    @Req() req: any,
+    @Body('enabled') enabled: boolean,
+  ): Promise<ApiResponse<any>> {
+    try {
+      const staffId = req.user.sub;
+      await this.staffService.toggleTwoFactor(staffId, enabled);
+      return new ApiResponse(
+        200,
+        null,
+        enabled ? 'Two-factor authentication enabled' : 'Two-factor authentication disabled',
+      );
+    } catch (err: any) {
+      throw new HttpException(
+        err.message || 'Failed to toggle 2FA',
         err.status || HttpStatus.BAD_REQUEST,
       );
     }
